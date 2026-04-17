@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>READY — Preparedness Gear Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -646,15 +648,323 @@
   .empty-icon { font-size: 48px; margin-bottom: 12px; }
   .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
 
-  @media (max-width: 900px) {
+  /* ── MOBILE BOTTOM NAV ── */
+  .mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 150;
+    padding: 0 4px;
+  }
+
+  .mobile-bottom-nav .nav-items {
+    display: flex;
+    height: 100%;
+    align-items: stretch;
+  }
+
+  .mobile-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 6px 2px;
+    border-radius: 8px;
+    transition: color 0.15s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav-btn.active { color: var(--accent); }
+  .mobile-nav-btn:active { background: var(--surface2); }
+  .mobile-nav-icon { font-size: 20px; line-height: 1; }
+
+  /* ── MOBILE DRAWER ── */
+  .mobile-drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 180;
+    backdrop-filter: blur(2px);
+  }
+  .mobile-drawer-overlay.open { display: block; }
+
+  .mobile-drawer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    max-height: 85vh;
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--border);
+    z-index: 190;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  .mobile-drawer.open { transform: translateY(0); }
+
+  .drawer-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 12px auto 16px;
+  }
+
+  .drawer-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    padding: 0 20px 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  /* ── MOBILE SCENARIO SCROLL ── */
+  .mobile-scenario-scroll {
+    display: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 10px 16px;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .mobile-scenario-scroll::-webkit-scrollbar { display: none; }
+
+  .mobile-scenario-chip {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s;
+  }
+  .mobile-scenario-chip.active {
+    background: rgba(200,240,96,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── MOBILE ITEM CARDS ── */
+  .mobile-item-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.15s;
+  }
+  .mobile-item-card:active { border-color: var(--accent); }
+  .mobile-item-card.checked { opacity: 0.5; }
+
+  .mobile-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .mobile-card-check {
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+  .mobile-card-check.checked { background: var(--accent); border-color: var(--accent); color: #0d0f0e; font-weight: 700; }
+
+  .mobile-card-body { flex: 1; min-width: 0; }
+  .mobile-card-name {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+  .mobile-card-name.checked { text-decoration: line-through; color: var(--muted); }
+  .mobile-card-desc { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+
+  .mobile-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .mobile-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-weight: 500;
+  }
+
+  .mobile-card-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 16px;
+    padding: 4px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+    border-radius: 6px;
+  }
+  .mobile-card-delete:active { background: rgba(255,68,68,0.15); color: var(--danger); }
+
+  /* ── MOBILE STATS ── */
+  .mobile-stats {
+    display: none;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 12px 16px;
+  }
+
+  .mobile-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .mobile-stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .mobile-stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── MOBILE FAB ── */
+  .mobile-fab {
+    display: none;
+    position: fixed;
+    bottom: 76px;
+    right: 20px;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    color: #0d0f0e;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(200,240,96,0.4);
+    z-index: 140;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s;
+  }
+  .mobile-fab:active { transform: scale(0.92); }
+
+  /* ── MOBILE CATEGORY HEADER ── */
+  .mobile-category-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0 8px;
+    margin-top: 4px;
+  }
+  .mobile-category-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    color: var(--text);
+  }
+  .mobile-category-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── BAG CARD MOBILE ── */
+  .mobile-bag-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 0 16px 10px;
+  }
+  .mobile-bag-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .mobile-bag-vol { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+
+  /* ── MOBILE/DESKTOP CONTENT TOGGLE ── */
+  #mobile-content { display: none; }
+
+  body.mobile #mobile-content { display: block; }
+  body.mobile .app { grid-template-columns: 1fr; }
+  body.mobile .sidebar { display: none; }
+  body.mobile header { height: 48px; padding: 0 14px; }
+  body.mobile .logo { font-size: 22px; }
+  body.mobile .logo-tag { display: none; }
+  body.mobile .header-actions { display: none; }
+  body.mobile main { padding: 0; display: none; }
+  body.mobile .stats-row { display: none; }
+  body.mobile .filter-bar { display: none; }
+  body.mobile .section-group { display: none; }
+  body.mobile .page-header { display: none; }
+  body.mobile .alert-banner { margin: 8px 16px; }
+  body.mobile .mobile-bottom-nav { display: flex; }
+  body.mobile .mobile-scenario-scroll { display: flex; }
+  body.mobile .mobile-stats { display: grid !important; }
+  body.mobile .mobile-fab { display: flex !important; align-items: center; justify-content: center; }
+
+  /* Also keep CSS media query as fallback */
+  @media (max-width: 768px) {
+    #mobile-content { display: block; }
     .app { grid-template-columns: 1fr; }
     .sidebar { display: none; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-    .table-head, .item-row {
-      grid-template-columns: 28px 1fr 80px 70px 70px;
-    }
-    .th:nth-child(6), .th:nth-child(7), .th:nth-child(8),
-    .td:nth-child(6), .td:nth-child(7) { display: none; }
+    header { height: 48px; padding: 0 14px; }
+    .logo { font-size: 22px; }
+    .logo-tag { display: none; }
+    .header-actions { display: none; }
+    main { padding: 0; display: none; }
+    .stats-row { display: none; }
+    .filter-bar { display: none; }
+    .section-group { display: none; }
+    .page-header { display: none; }
+    .alert-banner { margin: 8px 16px; }
+    .mobile-bottom-nav { display: flex; }
+    .mobile-scenario-scroll { display: flex; }
+    .mobile-stats { display: grid !important; }
+    .mobile-fab { display: flex !important; align-items: center; justify-content: center; }
   }
 </style>
 </head>
@@ -667,12 +977,17 @@
   </div>
   <div class="header-actions">
     <button class="btn btn-ghost btn-sm" onclick="openModal('bag-modal')">＋ Add Bag</button>
-    <button class="btn btn-primary btn-sm" onclick="openModal('item-modal')">＋ Add Item</button>
+    <button class="btn btn-primary btn-sm" onclick="openAddItem()">＋ Add Item</button>
   </div>
 </header>
 
+<!-- MOBILE SCENARIO STRIP -->
+<div class="mobile-scenario-scroll" id="mobile-scenario-strip">
+  <div id="mobile-scenario-chips" style="display:flex;gap:8px"></div>
+</div>
+
 <div class="app">
-  <!-- SIDEBAR -->
+  <!-- SIDEBAR (desktop) -->
   <nav class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Scenarios</div>
@@ -741,6 +1056,65 @@
   </main>
 </div>
 
+<!-- MOBILE CONTENT (below app div) -->
+<div id="mobile-content" style="padding: 0 16px 16px;"></div>
+
+<!-- MOBILE FAB -->
+<button class="mobile-fab" onclick="openAddItem()" title="Add custom item">＋</button>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="mobile-bottom-nav">
+  <div class="nav-items">
+    <button class="mobile-nav-btn active" id="mnav-items" onclick="mobileNav('items')">
+      <span class="mobile-nav-icon">📋</span>Items
+    </button>
+    <button class="mobile-nav-btn" id="mnav-bags" onclick="mobileNav('bags')">
+      <span class="mobile-nav-icon">🎒</span>Bags
+    </button>
+    <button class="mobile-nav-btn" id="mnav-alerts" onclick="mobileNav('alerts')">
+      <span class="mobile-nav-icon" id="mnav-alerts-icon">✅</span>Alerts
+    </button>
+    <button class="mobile-nav-btn" id="mnav-settings" onclick="mobileNav('settings')">
+      <span class="mobile-nav-icon">⚙️</span>More
+    </button>
+  </div>
+</div>
+
+<!-- MOBILE BAGS DRAWER -->
+<div class="mobile-drawer-overlay" id="bags-drawer-overlay" onclick="closeMobileDrawer('bags')"></div>
+<div class="mobile-drawer" id="bags-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">My Bags</div>
+  <div id="mobile-bags-list" style="padding-bottom:24px"></div>
+  <div style="padding:0 16px 8px">
+    <button class="btn btn-primary" style="width:100%" onclick="closeMobileDrawer('bags');openModal('bag-modal')">＋ Register New Bag</button>
+  </div>
+</div>
+
+<!-- MOBILE ALERTS DRAWER -->
+<div class="mobile-drawer-overlay" id="alerts-drawer-overlay" onclick="closeMobileDrawer('alerts')"></div>
+<div class="mobile-drawer" id="alerts-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">Rotation Alerts</div>
+  <div id="mobile-alerts-list" style="padding:0 16px 24px"></div>
+</div>
+
+<!-- MOBILE MORE DRAWER -->
+<div class="mobile-drawer-overlay" id="settings-drawer-overlay" onclick="closeMobileDrawer('settings')"></div>
+<div class="mobile-drawer" id="settings-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">More</div>
+  <div style="padding:0 16px 24px;display:flex;flex-direction:column;gap:10px">
+    <button class="btn btn-ghost" style="width:100%;text-align:left;padding:14px 16px;border-radius:8px" onclick="closeMobileDrawer('settings');setMobileView('all')">📋 All Items</button>
+    <button class="btn btn-ghost" style="width:100%;text-align:left;padding:14px 16px;border-radius:8px" onclick="closeMobileDrawer('settings');setMobileView('missing')">⬜ Missing / Unpacked</button>
+    <button class="btn btn-ghost" style="width:100%;text-align:left;padding:14px 16px;border-radius:8px" onclick="closeMobileDrawer('settings');setMobileView('expiring')">⚠️ Expiring Soon</button>
+    <button class="btn btn-ghost" style="width:100%;text-align:left;padding:14px 16px;border-radius:8px" onclick="closeMobileDrawer('settings');setMobileView('expired')">🔴 Expired</button>
+    <div style="border-top:1px solid var(--border);margin:4px 0"></div>
+    <button class="btn btn-primary" style="width:100%;padding:14px 16px;border-radius:8px" onclick="closeMobileDrawer('settings');openModal('bag-modal')">＋ Register Bag</button>
+    <button class="btn btn-primary" style="width:100%;padding:14px 16px;border-radius:8px" onclick="closeMobileDrawer('settings');openAddItem()">＋ Add Custom Item</button>
+  </div>
+</div>
+
 <!-- BAG MODAL -->
 <div class="modal-overlay" id="bag-modal">
   <div class="modal">
@@ -751,20 +1125,24 @@
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Volume (Liters)</label>
-        <input class="form-input" id="bag-liters" type="number" placeholder="e.g. 40">
+        <label class="form-label">Volume — Base (Liters)</label>
+        <input class="form-input" id="bag-liters" type="number" placeholder="e.g. 28">
       </div>
       <div class="form-group">
-        <label class="form-label">Assigned Scenario</label>
-        <select class="form-select" id="bag-scenario">
-          <option value="72hr">72-Hour Evacuation</option>
-          <option value="ghb">Get-Home Bag</option>
-          <option value="sip">Shelter-in-Place</option>
-          <option value="vehicle">Vehicle Kit</option>
-          <option value="wildfire">Wildfire Evac</option>
-          <option value="earthquake">Earthquake / CERT</option>
-        </select>
+        <label class="form-label">Volume — Expanded (Liters, optional)</label>
+        <input class="form-input" id="bag-liters-expanded" type="number" placeholder="e.g. 40.7 if expandable">
       </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Assigned Scenario</label>
+      <select class="form-select" id="bag-scenario">
+        <option value="72hr">72-Hour Evacuation</option>
+        <option value="ghb">Get-Home Bag</option>
+        <option value="sip">Shelter-in-Place</option>
+        <option value="vehicle">Vehicle Kit</option>
+        <option value="wildfire">Wildfire Evac</option>
+        <option value="earthquake">Earthquake / CERT</option>
+      </select>
     </div>
     <div class="form-group">
       <label class="form-label">Dimensions (optional — W × H × D in cm or inches)</label>
@@ -783,19 +1161,32 @@
 
 <!-- ITEM MODAL -->
 <div class="modal-overlay" id="item-modal">
-  <div class="modal">
-    <div class="modal-title">Add Item</div>
-    <div class="form-group">
-      <label class="form-label">Item Name</label>
-      <input class="form-input" id="item-name" placeholder="e.g. Water purification tablets">
+  <div class="modal" style="width:560px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+      <div class="modal-title" style="margin-bottom:0" id="item-modal-title">Add Custom Item</div>
+      <span id="item-custom-badge" style="font-family:'IBM Plex Mono',monospace;font-size:10px;padding:3px 8px;border-radius:10px;background:rgba(200,240,96,0.15);color:var(--accent);letter-spacing:1px">CUSTOM</span>
     </div>
-    <div class="form-group">
-      <label class="form-label">Description / Notes</label>
-      <input class="form-input" id="item-desc" placeholder="Brand, model, quantity, spec...">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:20px" id="item-modal-sub">Adding to: <span id="item-modal-scenario-label" style="color:var(--text)">—</span></div>
+
+    <div class="form-row">
+      <div class="form-group" style="flex:2">
+        <label class="form-label">Item Name <span style="color:var(--danger)">*</span></label>
+        <input class="form-input" id="item-name" placeholder="e.g. Titanium spork, emergency whistle...">
+      </div>
+      <div class="form-group" style="flex:0 0 90px">
+        <label class="form-label">Qty</label>
+        <input class="form-input" id="item-qty" type="number" min="1" value="1" placeholder="1">
+      </div>
     </div>
+
+    <div class="form-group">
+      <label class="form-label">Description / Spec Notes</label>
+      <input class="form-input" id="item-desc" placeholder="Brand, model, size, color, condition, quantity details...">
+    </div>
+
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Category</label>
+        <label class="form-label">Category <span style="color:var(--danger)">*</span></label>
         <select class="form-select" id="item-category">
           <option value="water">💧 Water</option>
           <option value="food">🍫 Food</option>
@@ -810,7 +1201,7 @@
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Priority</label>
+        <label class="form-label">Priority <span style="color:var(--danger)">*</span></label>
         <select class="form-select" id="item-priority">
           <option value="critical">🔴 Critical</option>
           <option value="high">🟠 High</option>
@@ -819,26 +1210,28 @@
         </select>
       </div>
     </div>
+
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Est. Volume (liters)</label>
-        <input class="form-input" id="item-volume" type="number" step="0.1" placeholder="e.g. 0.5">
+        <input class="form-input" id="item-volume" type="number" step="0.01" placeholder="e.g. 0.5">
       </div>
       <div class="form-group">
-        <label class="form-label">Est. Weight (oz or g)</label>
-        <input class="form-input" id="item-weight" placeholder="e.g. 4 oz">
+        <label class="form-label">Est. Weight</label>
+        <input class="form-input" id="item-weight" placeholder="e.g. 4 oz, 120g">
       </div>
     </div>
+
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Scenario</label>
+        <label class="form-label">Scenario <span style="color:var(--danger)">*</span></label>
         <select class="form-select" id="item-scenario">
-          <option value="72hr">72-Hour Evacuation</option>
-          <option value="ghb">Get-Home Bag</option>
-          <option value="sip">Shelter-in-Place</option>
-          <option value="vehicle">Vehicle Kit</option>
-          <option value="wildfire">Wildfire Evac</option>
-          <option value="earthquake">Earthquake / CERT</option>
+          <option value="72hr">🎒 72-Hour Evacuation</option>
+          <option value="ghb">🚶 Get-Home Bag</option>
+          <option value="sip">🏠 Shelter-in-Place</option>
+          <option value="vehicle">🚗 Vehicle Kit</option>
+          <option value="wildfire">🔥 Wildfire Evac</option>
+          <option value="earthquake">⚡ Earthquake / CERT</option>
         </select>
       </div>
       <div class="form-group">
@@ -846,20 +1239,41 @@
         <input class="form-input" id="item-expiry" type="date">
       </div>
     </div>
+
     <div class="form-group">
-      <label class="form-label">Source / Authority</label>
-      <select class="form-select" id="item-source">
-        <option value="FEMA">FEMA Ready.gov</option>
-        <option value="RedCross">American Red Cross</option>
-        <option value="CERT">CERT / Community Emergency</option>
-        <option value="CDC">CDC</option>
-        <option value="Wilderness">Wilderness Medicine / NOLS</option>
-        <option value="Custom">Custom / Personal</option>
-      </select>
+      <label class="form-label">Purchase / Reference Link (optional)</label>
+      <input class="form-input" id="item-link" type="url" placeholder="https://... Amazon, REI, manufacturer page">
     </div>
-    <div class="modal-actions">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Source / Authority</label>
+        <select class="form-select" id="item-source">
+          <option value="Custom" selected>✏️ Custom / Personal</option>
+          <option value="FEMA">FEMA Ready.gov</option>
+          <option value="RedCross">American Red Cross</option>
+          <option value="CERT">CERT / Community Emergency</option>
+          <option value="CDC">CDC</option>
+          <option value="Wilderness">Wilderness Medicine / NOLS</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status on Add</label>
+        <select class="form-select" id="item-checked">
+          <option value="false">📋 Not yet packed</option>
+          <option value="true">✅ Already packed / owned</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-top:4px;margin-bottom:4px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Maintenance / Rotation Notes</div>
+      <input class="form-input" id="item-maintenance" style="background:var(--surface)" placeholder="e.g. Replace batteries annually, rotate food every 12mo, inspect seals...">
+    </div>
+
+    <div class="modal-actions" style="margin-top:18px">
       <button class="btn btn-ghost" onclick="closeModal('item-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveItem()">Add Item</button>
+      <button class="btn btn-primary" onclick="saveItem()">＋ Add to List</button>
     </div>
   </div>
 </div>
@@ -968,7 +1382,25 @@ let items = [
   { id: 54, name: 'Emergency food bars (2-day)', desc: 'Datrex or Mayday bars', category: 'food', priority: 'high', scenario: 'vehicle', volume: 0.5, weight: '12 oz', expiry: nextDate(1825), source: 'FEMA', checked: false },
 ];
 
-let bags = [];
+let bags = [
+  {
+    id: 9001,
+    name: 'Eberlestock UpRanger',
+    liters: 53.4,
+    scenario: '72hr',
+    dims: '25.5" H × 16.5" W × 7.75" D',
+    notes: 'Polycarbonate base, rear-access harness design, MOLLE sides, removable wing panels. Usable capacity ~42.7L (80% rule). Source: eberlestock.com'
+  },
+  {
+    id: 9002,
+    name: 'Eberlestock Fade Adapt',
+    liters: 28,
+    litersExpanded: 40.7,
+    scenario: 'ghb',
+    dims: '21.75" H × 12.25" W × 7.5" D',
+    notes: 'Collapsed: 28L (scabbard hidden, fits 10.5" AR-15 w/ folding stock). Expanded: 40.7L (scabbard deployed, weapons up to 27" tall). Loop-lined interior, quick-disconnect weapon retention strap. Source: eberlestock.com'
+  }
+];
 let nextId = items.length + 1;
 
 function nextDate(days) {
@@ -1031,22 +1463,46 @@ function setFilter(f) {
 function saveBag() {
   const name = document.getElementById('bag-name').value.trim();
   const liters = parseFloat(document.getElementById('bag-liters').value) || 0;
+  const litersExpanded = parseFloat(document.getElementById('bag-liters-expanded').value) || null;
   const scenario = document.getElementById('bag-scenario').value;
   const dims = document.getElementById('bag-dims').value.trim();
   const notes = document.getElementById('bag-notes').value.trim();
   if (!name) { alert('Enter a bag name.'); return; }
-  bags.push({ id: Date.now(), name, liters, scenario, dims, notes });
+  bags.push({ id: Date.now(), name, liters, litersExpanded, scenario, dims, notes });
   document.getElementById('bag-name').value = '';
   document.getElementById('bag-liters').value = '';
+  document.getElementById('bag-liters-expanded').value = '';
   document.getElementById('bag-dims').value = '';
   document.getElementById('bag-notes').value = '';
   closeModal('bag-modal');
   render();
 }
 
+function openAddItem(scenario) {
+  // Pre-select the current scenario in the form
+  const s = scenario || currentScenario;
+  const sel = document.getElementById('item-scenario');
+  if (sel) sel.value = s;
+  // Update subtitle label
+  const lbl = document.getElementById('item-modal-scenario-label');
+  if (lbl) lbl.textContent = SCENARIO_LABELS[s] || s;
+  // Reset fields
+  ['item-name','item-desc','item-volume','item-weight','item-link','item-maintenance'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('item-qty').value = '1';
+  document.getElementById('item-expiry').value = '';
+  document.getElementById('item-source').value = 'Custom';
+  document.getElementById('item-checked').value = 'false';
+  document.getElementById('item-priority').value = 'medium';
+  openModal('item-modal');
+}
+
 function saveItem() {
   const name = document.getElementById('item-name').value.trim();
-  if (!name) { alert('Enter item name.'); return; }
+  if (!name) { document.getElementById('item-name').focus(); document.getElementById('item-name').style.borderColor='var(--danger)'; return; }
+  document.getElementById('item-name').style.borderColor = '';
   const item = {
     id: nextId++,
     name,
@@ -1056,13 +1512,15 @@ function saveItem() {
     scenario: document.getElementById('item-scenario').value,
     volume: parseFloat(document.getElementById('item-volume').value) || 0,
     weight: document.getElementById('item-weight').value.trim(),
+    qty: parseInt(document.getElementById('item-qty').value) || 1,
     expiry: document.getElementById('item-expiry').value || null,
     source: document.getElementById('item-source').value,
-    checked: false,
+    link: document.getElementById('item-link').value.trim(),
+    maintenance: document.getElementById('item-maintenance').value.trim(),
+    checked: document.getElementById('item-checked').value === 'true',
+    custom: true,
   };
   items.push(item);
-  document.getElementById('item-name').value = '';
-  document.getElementById('item-desc').value = '';
   closeModal('item-modal');
   render();
 }
@@ -1095,15 +1553,41 @@ function updateSidebarCounts() {
   });
 }
 
+function reassignBag(bagId, newScenario) {
+  const bag = bags.find(b => b.id === bagId);
+  if (bag) bag.scenario = newScenario;
+  render();
+}
+
+function deleteBag(bagId) {
+  bags = bags.filter(b => b.id !== bagId);
+  render();
+}
+
 function renderBagList() {
   const el = document.getElementById('bag-list');
   if (!bags.length) { el.innerHTML = ''; return; }
-  el.innerHTML = bags.map(b => `
-    <div class="bag-btn" style="display:flex;align-items:center;padding:8px 20px;gap:8px;">
-      <span style="flex:1;font-size:12px;color:var(--text)">${b.name}</span>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">${b.liters}L</span>
-    </div>
-  `).join('');
+  el.innerHTML = bags.map(b => {
+    const volLabel = b.litersExpanded
+      ? `${b.liters}L <span style="color:var(--accent);font-size:9px">▸ ${b.litersExpanded}L exp</span>`
+      : `${b.liters}L`;
+    const scenarioOptions = Object.entries(SCENARIO_LABELS).map(([k, v]) =>
+      `<option value="${k}" ${b.scenario === k ? 'selected' : ''}>${v}</option>`
+    ).join('');
+    return `
+      <div style="padding:8px 20px 10px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:600;color:var(--text)">${b.name}</span>
+          <button class="icon-btn" style="font-size:11px" title="Remove bag" onclick="deleteBag(${b.id})">✕</button>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px">${volLabel}</div>
+        <select class="form-select" style="font-size:11px;padding:4px 8px;height:auto"
+          onchange="reassignBag(${b.id}, this.value)">
+          ${scenarioOptions}
+        </select>
+      </div>
+    `;
+  }).join('');
 }
 
 function getFilteredItems() {
@@ -1127,6 +1611,20 @@ function getFilteredItems() {
 }
 
 function renderMain() {
+  // On mobile, skip desktop render entirely — renderMobile() handles everything
+  if (isMobile()) {
+    document.getElementById('main-content').innerHTML = '';
+    document.getElementById('main-content').style.display = 'none';
+    document.querySelector('.app').style.display = 'block';
+    // Force all desktop chrome hidden
+    document.querySelector('header').style.height = '48px';
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) headerActions.style.display = 'none';
+    const logoTag = document.querySelector('.logo-tag');
+    if (logoTag) logoTag.style.display = 'none';
+    return;
+  }
+
   const main = document.getElementById('main-content');
   const scenarioList = scenarioItems(currentScenario);
   const filteredList = getFilteredItems();
@@ -1157,9 +1655,12 @@ function renderMain() {
         <div class="page-title">${SCENARIO_ICONS[currentScenario]} ${SCENARIO_LABELS[currentScenario] || 'All Items'}</div>
         <div class="page-subtitle">
           ${currentView !== 'all' ? `VIEW: ${currentView.toUpperCase()} — ` : ''}
-          ${filteredList.length} items${bagCapacity ? ` · Bag: ${assignedBag.name} (${bagCapacity}L)` : ' · No bag assigned'}
+          ${filteredList.length} items${bagCapacity ? ` · ${assignedBag.name} (${assignedBag.liters}L${assignedBag.litersExpanded ? ' / ' + assignedBag.litersExpanded + 'L exp' : ''})` : ' · No bag assigned'}
         </div>
       </div>
+      <button class="btn btn-primary" onclick="openAddItem('${currentScenario}')" style="white-space:nowrap;flex-shrink:0">
+        ＋ Add Custom Item
+      </button>
     </div>
 
     ${(expiringSoon || expired) ? `
@@ -1186,11 +1687,19 @@ function renderMain() {
         <div class="stat-label">Items Checked</div>
       </div>
       <div class="stat-card">
-        <div class="stat-val" style="color:${volPct > 90 ? 'var(--danger)' : 'var(--text)'}">
+        <div class="stat-val" style="color:${totalVol/bagCapacity>1 ? 'var(--danger)' : 'var(--text)'}">
           ${totalVol.toFixed(1)}L
         </div>
-        <div class="stat-label">Total Item Volume${bagCapacity ? ` / ${bagCapacity}L cap` : ''}</div>
+        <div class="stat-label">
+          Item Volume${bagCapacity ? ` / ${bagCapacity}L${assignedBag && assignedBag.litersExpanded ? ' → ' + assignedBag.litersExpanded + 'L' : ''}` : ''}
+        </div>
         ${bagCapacity ? `<div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${Math.min(100,Math.round(totalVol/bagCapacity*100))}%;background:${totalVol/bagCapacity>1?'var(--danger)':'var(--good)'}"></div></div>` : ''}
+        ${assignedBag && assignedBag.litersExpanded && totalVol > bagCapacity && totalVol <= assignedBag.litersExpanded
+          ? `<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--warn);margin-top:4px">⚠ Fits only with scabbard expanded</div>`
+          : ''}
+        ${assignedBag && assignedBag.litersExpanded && totalVol <= bagCapacity
+          ? `<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--good);margin-top:4px">✓ Fits collapsed (${bagCapacity}L mode)</div>`
+          : ''}
       </div>
       <div class="stat-card">
         <div class="stat-val" style="color:${expired?'var(--danger)':expiringSoon?'var(--warn)':'var(--good)'}">
@@ -1210,9 +1719,17 @@ function renderMain() {
 
     ${filteredList.length === 0 ? `
       <div class="empty-state">
-        <div class="empty-icon">📦</div>
-        <div class="empty-title">No items here</div>
-        <div>Add items using the + Add Item button, or adjust your filters.</div>
+        <div class="empty-icon">${currentFilter !== 'all' ? CAT_LABELS[currentFilter]?.split(' ')[0] || '📦' : '📦'}</div>
+        <div class="empty-title">${currentFilter !== 'all' ? `No ${CAT_LABELS[currentFilter]} items yet` : 'No items in this view'}</div>
+        <div style="margin-bottom:20px;color:var(--muted);font-size:13px">
+          ${currentFilter !== 'all'
+            ? `You haven't added any custom ${CAT_LABELS[currentFilter]?.replace(/^\S+\s/,'')} items to this scenario yet.`
+            : currentView === 'missing' ? 'All items are checked off — nice work.'
+            : currentView === 'expiring' ? 'No items expiring within 90 days.'
+            : currentView === 'expired' ? 'No expired items. Stay on top of rotation!'
+            : 'Add your first custom item to get started.'}
+        </div>
+        ${currentView === 'all' ? `<button class="btn btn-primary" onclick="openAddItem('${currentScenario}')">＋ Add Custom Item to ${SCENARIO_LABELS[currentScenario]}</button>` : ''}
       </div>
     ` : categories.map(cat => {
       const catItems = filteredList.filter(i => i.category === cat);
@@ -1235,11 +1752,27 @@ function renderMain() {
               <div class="th"></div>
             </div>
             ${catItems.map(item => renderItemRow(item)).join('')}
+            <div style="padding:8px 16px;border-top:1px dashed var(--border)">
+              <button onclick="openAddItemInCategory('${currentScenario}','${cat}')"
+                style="background:none;border:none;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;padding:2px 0;transition:color 0.15s"
+                onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">
+                ＋ Add custom ${CAT_LABELS[cat]?.replace(/^\S+\s/,'').toLowerCase()} item
+              </button>
+            </div>
           </div>
         </div>
       `;
     }).join('')}
   `;
+}
+
+function openAddItemInCategory(scenario, category) {
+  openAddItem(scenario);
+  // After modal opens, set the category
+  setTimeout(() => {
+    const sel = document.getElementById('item-category');
+    if (sel) sel.value = category;
+  }, 10);
 }
 
 function renderItemRow(item) {
@@ -1260,8 +1793,14 @@ function renderItemRow(item) {
     <div class="item-row" style="${item.checked ? 'opacity:0.55' : ''}">
       <div class="item-check ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${item.id})">${item.checked ? '✓' : ''}</div>
       <div>
-        <div class="item-name" style="${item.checked ? 'text-decoration:line-through' : ''}">${item.name}</div>
+        <div class="item-name" style="${item.checked ? 'text-decoration:line-through' : ''}">
+          ${item.name}
+          ${item.qty && item.qty > 1 ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-left:6px">×${item.qty}</span>` : ''}
+          ${item.custom ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(200,240,96,0.1);color:var(--accent);margin-left:6px">CUSTOM</span>` : ''}
+          ${item.link ? `<a href="${item.link}" target="_blank" style="margin-left:6px;font-size:11px;color:var(--muted);text-decoration:none" title="View product link">🔗</a>` : ''}
+        </div>
         <div class="item-desc">${item.desc || ''}</div>
+        ${item.maintenance ? `<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--warn);margin-top:2px">🔄 ${item.maintenance}</div>` : ''}
         <div class="source-tag">▸ ${item.source}</div>
       </div>
       <div class="td">
@@ -1285,7 +1824,270 @@ function renderItemRow(item) {
   `;
 }
 
+// ─── MOBILE ──────────────────────────────────────────────────────────────────
+let mobileView = 'all';
+let currentMobileTab = 'items';
+
+function isMobile() {
+  // Check multiple signals — Android Chrome can be unreliable with just innerWidth
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const narrowScreen = window.innerWidth <= 900;
+  const mobileUA = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  return hasTouch || narrowScreen || mobileUA;
+}
+
+function applyMobileClass() {
+  if (isMobile()) {
+    document.body.classList.add('mobile');
+  } else {
+    document.body.classList.remove('mobile');
+  }
+}
+
+// Apply immediately before anything renders
+applyMobileClass();
+
+function mobileNav(tab) {
+  currentMobileTab = tab;
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`mnav-${tab}`);
+  if (btn) btn.classList.add('active');
+
+  if (tab === 'bags') { openMobileDrawer('bags'); return; }
+  if (tab === 'alerts') { openMobileDrawer('alerts'); return; }
+  if (tab === 'settings') { openMobileDrawer('settings'); return; }
+  renderMobile();
+}
+
+function setMobileView(v) {
+  mobileView = v;
+  currentMobileTab = 'items';
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mnav-items').classList.add('active');
+  renderMobile();
+}
+
+function openMobileDrawer(name) {
+  renderMobileDrawer(name);
+  document.getElementById(`${name}-drawer-overlay`).classList.add('open');
+  setTimeout(() => document.getElementById(`${name}-drawer`).classList.add('open'), 10);
+}
+
+function closeMobileDrawer(name) {
+  document.getElementById(`${name}-drawer`).classList.remove('open');
+  document.getElementById(`${name}-drawer-overlay`).classList.remove('open');
+  // Reset nav highlight back to items
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mnav-items').classList.add('active');
+}
+
+function renderMobileDrawer(name) {
+  if (name === 'bags') {
+    const el = document.getElementById('mobile-bags-list');
+    if (!bags.length) {
+      el.innerHTML = '<div style="padding:16px 16px 0;color:var(--muted);font-size:13px">No bags registered yet.</div>';
+      return;
+    }
+    el.innerHTML = bags.map(b => `
+      <div class="mobile-bag-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div class="mobile-bag-name">${b.name}</div>
+          <button class="mobile-card-delete" onclick="deleteBag(${b.id});renderMobileDrawer('bags')">✕</button>
+        </div>
+        <div class="mobile-bag-vol">
+          ${b.liters}L${b.litersExpanded ? ` <span style="color:var(--accent)">▸ ${b.litersExpanded}L expanded</span>` : ''}
+          ${b.dims ? ` · ${b.dims}` : ''}
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px">Assigned to:</div>
+        <select class="form-select" style="font-size:12px" onchange="reassignBag(${b.id},this.value);renderMobileDrawer('bags')">
+          ${Object.entries(SCENARIO_LABELS).map(([k,v]) =>
+            `<option value="${k}" ${b.scenario===k?'selected':''}>${SCENARIO_ICONS[k]} ${v}</option>`
+          ).join('')}
+        </select>
+        ${b.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:8px">${b.notes}</div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  if (name === 'alerts') {
+    const el = document.getElementById('mobile-alerts-list');
+    const expired = items.filter(i => expiryStatus(i.expiry) === 'expired');
+    const expiring = items.filter(i => expiryStatus(i.expiry) === 'warn');
+    if (!expired.length && !expiring.length) {
+      el.innerHTML = '<div style="padding-top:8px;color:var(--good);font-size:14px;font-weight:600">✓ All clear — nothing needs rotation right now.</div>';
+      return;
+    }
+    const renderAlertItem = (item, type) => `
+      <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="font-weight:600;font-size:13px;margin-bottom:3px">${item.name}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="status-badge ${type === 'expired' ? 'status-expired' : 'status-warn'}">
+            ${type === 'expired' ? 'EXPIRED' : `${daysUntilExpiry(item.expiry)}d left`}
+          </span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">${SCENARIO_LABELS[item.scenario]}</span>
+        </div>
+      </div>`;
+    el.innerHTML =
+      (expired.length ? `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--danger);text-transform:uppercase;letter-spacing:1px;padding:8px 0 4px">Expired</div>` + expired.map(i => renderAlertItem(i,'expired')).join('') : '') +
+      (expiring.length ? `<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--warn);text-transform:uppercase;letter-spacing:1px;padding:12px 0 4px">Expiring Soon</div>` + expiring.map(i => renderAlertItem(i,'warn')).join('') : '');
+  }
+}
+
+function getMobileItems() {
+  let list = items.filter(i => i.scenario === currentScenario);
+  if (mobileView === 'missing') list = list.filter(i => !i.checked);
+  if (mobileView === 'expiring') list = items.filter(i => expiryStatus(i.expiry) === 'warn');
+  if (mobileView === 'expired') list = items.filter(i => expiryStatus(i.expiry) === 'expired');
+  return list;
+}
+
+function renderMobile() {
+  const mc = document.getElementById('mobile-content');
+  if (!mc) return;
+
+  // Force mobile chrome visible via inline styles — bypasses any CSS class issues
+  mc.style.display = 'block';
+  const bottomNav = document.querySelector('.mobile-bottom-nav');
+  if (bottomNav) bottomNav.style.display = 'flex';
+  const scenarioStrip = document.getElementById('mobile-scenario-strip');
+  if (scenarioStrip) scenarioStrip.style.display = 'flex';
+  const fab = document.querySelector('.mobile-fab');
+  if (fab) { fab.style.display = 'flex'; fab.style.alignItems = 'center'; fab.style.justifyContent = 'center'; }
+
+  // Scenario chips
+  const chips = document.getElementById('mobile-scenario-chips');
+  if (chips) {
+    chips.innerHTML = Object.entries(SCENARIO_LABELS).map(([k,v]) => `
+      <button class="mobile-scenario-chip ${currentScenario===k?'active':''}" onclick="setScenario('${k}');renderMobile()">
+        ${SCENARIO_ICONS[k]} ${v}
+      </button>
+    `).join('');
+  }
+
+  // Update alerts badge
+  const alertCount = items.filter(i => expiryStatus(i.expiry) === 'expired' || expiryStatus(i.expiry) === 'warn').length;
+  const alertIcon = document.getElementById('mnav-alerts-icon');
+  if (alertIcon) alertIcon.textContent = alertCount > 0 ? '⚠️' : '✅';
+
+  const list = getMobileItems();
+  const allScenarioItems = items.filter(i => i.scenario === currentScenario);
+  const packed = allScenarioItems.filter(i => i.checked).length;
+  const total = allScenarioItems.length;
+  const pct = total ? Math.round(packed/total*100) : 0;
+  const totalVol = totalVolume(allScenarioItems);
+  const assignedBag = bags.find(b => b.scenario === currentScenario);
+  const bagCap = assignedBag ? assignedBag.liters : null;
+  const expiredCount = items.filter(i => expiryStatus(i.expiry) === 'expired').length;
+  const expiringCount = items.filter(i => expiryStatus(i.expiry) === 'warn').length;
+
+  // Mobile content area
+  const mc = document.getElementById('mobile-content');
+
+  // Stats
+  const statsHtml = `
+    <div class="mobile-stats" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 16px">
+      <div class="mobile-stat">
+        <div class="mobile-stat-val" style="color:var(--accent)">${pct}%</div>
+        <div class="mobile-stat-label">Packed</div>
+        <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+      </div>
+      <div class="mobile-stat">
+        <div class="mobile-stat-val">${packed}/${total}</div>
+        <div class="mobile-stat-label">Items Checked</div>
+      </div>
+      <div class="mobile-stat">
+        <div class="mobile-stat-val" style="color:${bagCap&&totalVol>bagCap?'var(--danger)':'var(--text)'}">${totalVol.toFixed(1)}L</div>
+        <div class="mobile-stat-label">Volume${bagCap?` / ${bagCap}L`:''}</div>
+        ${bagCap?`<div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${Math.min(100,Math.round(totalVol/bagCap*100))}%;background:${totalVol>bagCap?'var(--danger)':'var(--good)'}"></div></div>`:''}
+      </div>
+      <div class="mobile-stat">
+        <div class="mobile-stat-val" style="color:${expiredCount?'var(--danger)':expiringCount?'var(--warn)':'var(--good)'}">${expiredCount+expiringCount}</div>
+        <div class="mobile-stat-label">Need Rotation</div>
+      </div>
+    </div>`;
+
+  // View label
+  const viewLabels = { all:'All Items', missing:'Unpacked', expiring:'Expiring Soon', expired:'Expired' };
+  const viewLabel = mobileView !== 'all' ? `
+    <div style="margin:0 0 8px;padding:8px 12px;background:rgba(200,240,96,0.08);border:1px solid rgba(200,240,96,0.2);border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);display:flex;align-items:center;justify-content:space-between">
+      <span>VIEW: ${viewLabels[mobileView]?.toUpperCase()}</span>
+      <button onclick="setMobileView('all')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">✕</button>
+    </div>` : '';
+
+  // Group by category
+  const categories = [...new Set(list.map(i => i.category))];
+
+  const itemsHtml = categories.length === 0 ? `
+    <div class="empty-state" style="padding:40px 0">
+      <div class="empty-icon">📦</div>
+      <div class="empty-title">No items here</div>
+      <div style="margin-bottom:20px;font-size:13px">Tap ＋ to add a custom item.</div>
+      <button class="btn btn-primary" onclick="openAddItem('${currentScenario}')">＋ Add Custom Item</button>
+    </div>` :
+    categories.map(cat => {
+      const catItems = list.filter(i => i.category === cat);
+      const catPacked = catItems.filter(i => i.checked).length;
+      return `
+        <div class="mobile-category-header">
+          <div class="mobile-category-title">${CAT_LABELS[cat]}</div>
+          <div class="mobile-category-count">${catPacked}/${catItems.length}</div>
+        </div>
+        ${catItems.map(item => renderMobileCard(item)).join('')}
+        <button onclick="openAddItemInCategory('${currentScenario}','${cat}')"
+          style="width:100%;background:none;border:1px dashed var(--border);border-radius:8px;padding:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;cursor:pointer;margin-bottom:8px;-webkit-tap-highlight-color:transparent">
+          ＋ Add ${CAT_LABELS[cat]?.replace(/^\S+\s/,'').toLowerCase()} item
+        </button>`;
+    }).join('');
+
+  mc.innerHTML = statsHtml + '<div style="padding-top:8px">' + viewLabel + itemsHtml + '</div>';
+}
+
+function renderMobileCard(item) {
+  const es = expiryStatus(item.expiry);
+  const d = daysUntilExpiry(item.expiry);
+  const pcolor = PRIORITY_COLORS[item.priority] || 'var(--muted)';
+  let expiryBadge = '';
+  if (es === 'expired') expiryBadge = `<span class="mobile-pill status-expired">EXPIRED</span>`;
+  else if (es === 'warn') expiryBadge = `<span class="mobile-pill status-warn">${d}d left</span>`;
+
+  return `
+    <div class="mobile-item-card ${item.checked?'checked':''}" onclick="toggleCheck(${item.id});renderMobile()">
+      <div class="mobile-card-top">
+        <div class="mobile-card-check ${item.checked?'checked':''}">${item.checked?'✓':''}</div>
+        <div class="mobile-card-body">
+          <div class="mobile-card-name ${item.checked?'checked':''}">
+            ${item.name}
+            ${item.qty&&item.qty>1?`<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)"> ×${item.qty}</span>`:''}
+            ${item.custom?`<span style="font-family:'IBM Plex Mono',monospace;font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(200,240,96,0.1);color:var(--accent);margin-left:4px">CUSTOM</span>`:''}
+          </div>
+          ${item.desc?`<div class="mobile-card-desc">${item.desc}</div>`:''}
+          <div class="mobile-card-meta">
+            <span class="mobile-pill cat-${item.category}">${CAT_LABELS[item.category]?.split(' ')[0]}</span>
+            <span class="mobile-pill" style="background:rgba(0,0,0,0.2)"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${pcolor};margin-right:4px;vertical-align:middle"></span>${item.priority}</span>
+            ${item.volume?`<span class="mobile-pill" style="background:rgba(0,0,0,0.2);color:var(--muted)">${item.volume}L</span>`:''}
+            ${expiryBadge}
+            ${item.link?`<a href="${item.link}" target="_blank" onclick="event.stopPropagation()" style="font-size:13px;text-decoration:none">🔗</a>`:''}
+          </div>
+          ${item.maintenance?`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--warn);margin-top:5px">🔄 ${item.maintenance}</div>`:''}
+        </div>
+        <button class="mobile-card-delete" onclick="event.stopPropagation();deleteItem(${item.id});renderMobile()">🗑</button>
+      </div>
+    </div>`;
+}
+
+// Override render to also trigger mobile render
+const _origRender = render;
+function render() {
+  updateSidebarCounts();
+  renderBagList();
+  renderMain();
+  renderMobile();
+}
+
+window.addEventListener('resize', () => { applyMobileClass(); renderMobile(); });
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
+applyMobileClass();
 render();
 </script>
 </body>
