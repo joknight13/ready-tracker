@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>READY — Preparedness Gear Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e;
+    --surface: #161a18;
+    --surface2: #1e2421;
+    --border: #2a3030;
+    --accent: #c8f060;
+    --accent2: #ff6b35;
+    --warn: #ffb347;
+    --danger: #ff4444;
+    --text: #e8ede8;
+    --muted: #7a8c82;
+    --good: #4ecb71;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* LAYOUT */
+  .app {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    margin-bottom: 24px;
+  }
+
+  .sidebar-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    padding: 0 20px 8px;
+    text-transform: uppercase;
+  }
+
+  .scenario-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+  }
+
+  .scenario-btn:hover { background: var(--surface2); }
+  .scenario-btn.active {
+    background: var(--surface2);
+    border-left-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .scenario-icon { font-size: 18px; flex-shrink: 0; }
+
+  .scenario-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .scenario-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .bag-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 20px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: left;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    transition: color 0.15s;
+  }
+
+  .bag-btn:hover { color: var(--text); }
+
+  .add-bag-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: calc(100% - 40px);
+    margin: 8px 20px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border: 1px dashed var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+
+  .add-bag-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* MAIN */
+  main {
+    padding: 28px;
+    overflow-y: auto;
+  }
+
+  /* PAGE HEADER */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 20px;
+  }
+
+  .page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 3px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .page-subtitle {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* BAG PROFILE CARD */
+  .bag-profile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .bag-profile-info { display: flex; gap: 24px; align-items: center; }
+
+  .bag-volume-gauge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 80px;
+  }
+
+  .gauge-ring {
+    position: relative;
+    width: 72px;
+    height: 72px;
+  }
+
+  .gauge-ring svg { transform: rotate(-90deg); }
+
+  .gauge-ring .track {
+    fill: none;
+    stroke: var(--surface2);
+    stroke-width: 6;
+  }
+
+  .gauge-ring .fill {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s ease;
+  }
+
+  .gauge-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .gauge-pct { font-size: 15px; font-weight: 600; }
+
+  .bag-details { display: flex; flex-direction: column; gap: 4px; }
+  .bag-name { font-size: 16px; font-weight: 600; }
+  .bag-spec { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  .btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0d0f0e;
+  }
+  .btn-primary:hover { background: #b8e050; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+
+  .stat-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-chip {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    transition: all 0.15s;
+  }
+
+  .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-chip.active { background: var(--accent); color: #0d0f0e; border-color: var(--accent); font-weight: 600; }
+
+  .search-box {
+    margin-left: auto;
+    padding: 6px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    width: 200px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--muted); }
+
+  /* ITEM TABLE */
+  .item-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: 28px 1fr 90px 80px 80px 90px 90px 60px;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+  }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 90px 80px 80px 90px 90px 60px;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.1s;
+    cursor: pointer;
+  }
+
+  .item-row:last-child { border-bottom: none; }
+  .item-row:hover { background: var(--surface2); }
+
+  .item-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .item-check.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0d0f0e;
+    font-size: 10px;
+  }
+
+  .item-name { font-weight: 500; font-size: 13px; }
+  .item-desc { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+  .category-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .td { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); }
+
+  .priority-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+  }
+
+  .status-badge {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .status-ok { background: rgba(78,203,113,0.15); color: var(--good); }
+  .status-warn { background: rgba(255,179,71,0.15); color: var(--warn); }
+  .status-expired { background: rgba(255,68,68,0.15); color: var(--danger); }
+  .status-missing { background: rgba(122,140,130,0.12); color: var(--muted); }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* CATEGORY COLORS */
+  .cat-water { background: rgba(100,180,255,0.15); color: #64b4ff; }
+  .cat-food { background: rgba(255,179,71,0.15); color: var(--warn); }
+  .cat-shelter { background: rgba(78,203,113,0.15); color: var(--good); }
+  .cat-medical { background: rgba(255,100,100,0.15); color: #ff6464; }
+  .cat-comms { background: rgba(200,240,96,0.15); color: var(--accent); }
+  .cat-tools { background: rgba(180,140,255,0.15); color: #b48cff; }
+  .cat-docs { background: rgba(255,107,53,0.15); color: var(--accent2); }
+  .cat-power { background: rgba(255,220,100,0.15); color: #ffdc64; }
+  .cat-hygiene { background: rgba(150,220,200,0.15); color: #96dcc8; }
+  .cat-nav { background: rgba(200,160,100,0.15); color: #c8a064; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    width: 480px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    color: var(--accent);
+  }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .form-select option { background: var(--surface2); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* SECTION GROUP */
+  .section-group { margin-bottom: 32px; }
+
+  .section-group-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-group-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .section-progress {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  /* EXPIRY ALERT */
+  .alert-banner {
+    background: rgba(255,179,71,0.08);
+    border: 1px solid rgba(255,179,71,0.3);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .alert-icon { font-size: 18px; }
+  .alert-text { font-size: 12px; color: var(--warn); }
+  .alert-text strong { display: block; margin-bottom: 2px; font-size: 13px; }
+
+  /* VOLUME TAG */
+  .vol-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+  .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    padding: 4px;
+    font-size: 14px;
+    transition: color 0.15s;
+    border-radius: 3px;
+  }
+  .icon-btn:hover { color: var(--text); background: var(--surface2); }
+
+  /* TOOLTIP */
+  .source-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+
+  /* VOLUME BAR INLINE */
+  .vol-bar {
+    width: 48px;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .vol-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    opacity: 0.7;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .table-head, .item-row {
+      grid-template-columns: 28px 1fr 80px 70px 70px;
+    }
+    .th:nth-child(6), .th:nth-child(7), .th:nth-child(8),
+    .td:nth-child(6), .td:nth-child(7) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">⬡ READY</div>
+    <div class="logo-tag">PREPAREDNESS GEAR TRACKER</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openModal('bag-modal')">＋ Add Bag</button>
+    <button class="btn btn-primary btn-sm" onclick="openModal('item-modal')">＋ Add Item</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Scenarios</div>
+      <button class="scenario-btn active" onclick="setScenario('72hr')">
+        <span class="scenario-icon">🎒</span>
+        <span class="scenario-meta">
+          <span>72-Hour Evacuation</span>
+          <span class="scenario-count" id="count-72hr">0 items</span>
+        </span>
+      </button>
+      <button class="scenario-btn" onclick="setScenario('ghb')">
+        <span class="scenario-icon">🚶</span>
+        <span class="scenario-meta">
+          <span>Get-Home Bag</span>
+          <span class="scenario-count" id="count-ghb">0 items</span>
+        </span>
+      </button>
+      <button class="scenario-btn" onclick="setScenario('sip')">
+        <span class="scenario-icon">🏠</span>
+        <span class="scenario-meta">
+          <span>Shelter-in-Place</span>
+          <span class="scenario-count" id="count-sip">0 items</span>
+        </span>
+      </button>
+      <button class="scenario-btn" onclick="setScenario('vehicle')">
+        <span class="scenario-icon">🚗</span>
+        <span class="scenario-meta">
+          <span>Vehicle Kit</span>
+          <span class="scenario-count" id="count-vehicle">0 items</span>
+        </span>
+      </button>
+      <button class="scenario-btn" onclick="setScenario('wildfire')">
+        <span class="scenario-icon">🔥</span>
+        <span class="scenario-meta">
+          <span>Wildfire Evac</span>
+          <span class="scenario-count" id="count-wildfire">0 items</span>
+        </span>
+      </button>
+      <button class="scenario-btn" onclick="setScenario('earthquake')">
+        <span class="scenario-icon">⚡</span>
+        <span class="scenario-meta">
+          <span>Earthquake / CERT</span>
+          <span class="scenario-count" id="count-earthquake">0 items</span>
+        </span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">My Bags</div>
+      <div id="bag-list"></div>
+      <button class="add-bag-btn" onclick="openModal('bag-modal')">＋ REGISTER BAG</button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">View</div>
+      <button class="bag-btn" onclick="setView('all')">All Items</button>
+      <button class="bag-btn" onclick="setView('missing')">Missing / Unchecked</button>
+      <button class="bag-btn" onclick="setView('expiring')">Expiring Soon</button>
+      <button class="bag-btn" onclick="setView('expired')">Expired</button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main id="main-content">
+    <!-- rendered by JS -->
+  </main>
+</div>
+
+<!-- BAG MODAL -->
+<div class="modal-overlay" id="bag-modal">
+  <div class="modal">
+    <div class="modal-title">Register a Bag</div>
+    <div class="form-group">
+      <label class="form-label">Bag Name / Label</label>
+      <input class="form-input" id="bag-name" placeholder="e.g. Red MOLLE 40L, Gray Osprey...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Volume (Liters)</label>
+        <input class="form-input" id="bag-liters" type="number" placeholder="e.g. 40">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Assigned Scenario</label>
+        <select class="form-select" id="bag-scenario">
+          <option value="72hr">72-Hour Evacuation</option>
+          <option value="ghb">Get-Home Bag</option>
+          <option value="sip">Shelter-in-Place</option>
+          <option value="vehicle">Vehicle Kit</option>
+          <option value="wildfire">Wildfire Evac</option>
+          <option value="earthquake">Earthquake / CERT</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Dimensions (optional — W × H × D in cm or inches)</label>
+      <input class="form-input" id="bag-dims" placeholder="e.g. 30cm × 50cm × 20cm">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <input class="form-input" id="bag-notes" placeholder="Color, brand, special features...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('bag-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBag()">Register Bag</button>
+    </div>
+  </div>
+</div>
+
+<!-- ITEM MODAL -->
+<div class="modal-overlay" id="item-modal">
+  <div class="modal">
+    <div class="modal-
