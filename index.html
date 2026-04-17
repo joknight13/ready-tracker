@@ -784,4 +784,509 @@
 <!-- ITEM MODAL -->
 <div class="modal-overlay" id="item-modal">
   <div class="modal">
-    <div class="modal-
+    <div class="modal-title">Add Item</div>
+    <div class="form-group">
+      <label class="form-label">Item Name</label>
+      <input class="form-input" id="item-name" placeholder="e.g. Water purification tablets">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description / Notes</label>
+      <input class="form-input" id="item-desc" placeholder="Brand, model, quantity, spec...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="item-category">
+          <option value="water">💧 Water</option>
+          <option value="food">🍫 Food</option>
+          <option value="shelter">⛺ Shelter</option>
+          <option value="medical">🩺 Medical</option>
+          <option value="comms">📡 Comms</option>
+          <option value="tools">🔧 Tools</option>
+          <option value="docs">📄 Docs / Finance</option>
+          <option value="power">🔋 Power</option>
+          <option value="hygiene">🧼 Hygiene</option>
+          <option value="nav">🧭 Navigation</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-select" id="item-priority">
+          <option value="critical">🔴 Critical</option>
+          <option value="high">🟠 High</option>
+          <option value="medium">🟡 Medium</option>
+          <option value="low">🟢 Low / Nice-to-have</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Est. Volume (liters)</label>
+        <input class="form-input" id="item-volume" type="number" step="0.1" placeholder="e.g. 0.5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Est. Weight (oz or g)</label>
+        <input class="form-input" id="item-weight" placeholder="e.g. 4 oz">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Scenario</label>
+        <select class="form-select" id="item-scenario">
+          <option value="72hr">72-Hour Evacuation</option>
+          <option value="ghb">Get-Home Bag</option>
+          <option value="sip">Shelter-in-Place</option>
+          <option value="vehicle">Vehicle Kit</option>
+          <option value="wildfire">Wildfire Evac</option>
+          <option value="earthquake">Earthquake / CERT</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expiry / Rotation Date</label>
+        <input class="form-input" id="item-expiry" type="date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Source / Authority</label>
+      <select class="form-select" id="item-source">
+        <option value="FEMA">FEMA Ready.gov</option>
+        <option value="RedCross">American Red Cross</option>
+        <option value="CERT">CERT / Community Emergency</option>
+        <option value="CDC">CDC</option>
+        <option value="Wilderness">Wilderness Medicine / NOLS</option>
+        <option value="Custom">Custom / Personal</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('item-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItem()">Add Item</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentScenario = '72hr';
+let currentFilter = 'all';
+let currentView = 'all';
+let searchQuery = '';
+let editingItemId = null;
+
+const SCENARIO_LABELS = {
+  '72hr': '72-Hour Evacuation',
+  'ghb': 'Get-Home Bag',
+  'sip': 'Shelter-in-Place',
+  'vehicle': 'Vehicle Kit',
+  'wildfire': 'Wildfire Evac',
+  'earthquake': 'Earthquake / CERT'
+};
+
+const SCENARIO_ICONS = {
+  '72hr': '🎒', 'ghb': '🚶', 'sip': '🏠',
+  'vehicle': '🚗', 'wildfire': '🔥', 'earthquake': '⚡'
+};
+
+const CAT_LABELS = {
+  water: '💧 Water', food: '🍫 Food', shelter: '⛺ Shelter',
+  medical: '🩺 Medical', comms: '📡 Comms', tools: '🔧 Tools',
+  docs: '📄 Docs', power: '🔋 Power', hygiene: '🧼 Hygiene', nav: '🧭 Nav'
+};
+
+const PRIORITY_COLORS = {
+  critical: '#ff4444', high: '#ff6b35', medium: '#ffb347', low: '#4ecb71'
+};
+
+// ─── SEED DATA (FEMA / Red Cross / CERT based) ───────────────────────────────
+let items = [
+  // 72HR WATER
+  { id: 1, name: 'Water — 1 gal/person/day (3 days)', desc: '3 gallons per person minimum', category: 'water', priority: 'critical', scenario: '72hr', volume: 11.4, weight: '25 lb', expiry: nextDate(365), source: 'FEMA', checked: false },
+  { id: 2, name: 'Water purification tablets', desc: 'Potable Aqua or iodine tabs, 50-ct', category: 'water', priority: 'critical', scenario: '72hr', volume: 0.1, weight: '1 oz', expiry: nextDate(1460), source: 'RedCross', checked: false },
+  { id: 3, name: 'Collapsible water containers (2x)', desc: '2.5 gal Reliance Aqua-Tainer or similar', category: 'water', priority: 'high', scenario: '72hr', volume: 0.5, weight: '6 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 4, name: 'Portable water filter', desc: 'LifeStraw or Sawyer Squeeze', category: 'water', priority: 'high', scenario: '72hr', volume: 0.3, weight: '2 oz', expiry: null, source: 'CERT', checked: false },
+  // 72HR FOOD
+  { id: 5, name: 'Non-perishable food (3-day supply)', desc: 'MREs, freeze-dried, bars — 2000 cal/day', category: 'food', priority: 'critical', scenario: '72hr', volume: 4.0, weight: '6 lb', expiry: nextDate(1095), source: 'FEMA', checked: false },
+  { id: 6, name: 'Manual can opener', desc: 'P-38 or quality camp opener', category: 'food', priority: 'high', scenario: '72hr', volume: 0.05, weight: '1 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 7, name: 'Camp stove + fuel canister', desc: 'MSR PocketRocket or Jetboil, 100g canister', category: 'food', priority: 'medium', scenario: '72hr', volume: 0.8, weight: '8 oz', expiry: null, source: 'CERT', checked: false },
+  // 72HR SHELTER
+  { id: 8, name: 'Emergency mylar blankets (2)', desc: 'Space Emergency Blankets — 2 per person', category: 'shelter', priority: 'critical', scenario: '72hr', volume: 0.1, weight: '2 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 9, name: 'Tent or tarp (lightweight)', desc: 'Two-person tent or 8×10 silnylon tarp', category: 'shelter', priority: 'high', scenario: '72hr', volume: 3.5, weight: '2 lb', expiry: null, source: 'RedCross', checked: false },
+  { id: 10, name: 'Sleeping bag (appropriate rating)', desc: 'Rated to lowest expected temp', category: 'shelter', priority: 'high', scenario: '72hr', volume: 5.0, weight: '3 lb', expiry: null, source: 'RedCross', checked: false },
+  { id: 11, name: 'Extra clothing (3 days)', desc: 'Moisture-wicking, warm layers, rain gear', category: 'shelter', priority: 'high', scenario: '72hr', volume: 4.0, weight: '4 lb', expiry: null, source: 'FEMA', checked: false },
+  { id: 12, name: 'Work gloves (heavy duty)', desc: 'Leather or cut-resistant', category: 'shelter', priority: 'medium', scenario: '72hr', volume: 0.3, weight: '8 oz', expiry: null, source: 'CERT', checked: false },
+  // 72HR MEDICAL
+  { id: 13, name: 'First aid kit (comprehensive)', desc: 'IFAK or Red Cross 163-pc kit minimum', category: 'medical', priority: 'critical', scenario: '72hr', volume: 1.5, weight: '2 lb', expiry: nextDate(730), source: 'RedCross', checked: false },
+  { id: 14, name: 'Prescription medications (7-day+)', desc: 'All personal meds in waterproof container', category: 'medical', priority: 'critical', scenario: '72hr', volume: 0.3, weight: '4 oz', expiry: nextDate(180), source: 'FEMA', checked: false },
+  { id: 15, name: 'Tourniquet (CAT or SOFTT-W)', desc: 'TCCC-approved, pre-staged', category: 'medical', priority: 'critical', scenario: '72hr', volume: 0.2, weight: '3 oz', expiry: null, source: 'Wilderness', checked: false },
+  { id: 16, name: 'Hemostatic gauze (QuikClot/Celox)', desc: '2 packages', category: 'medical', priority: 'high', scenario: '72hr', volume: 0.2, weight: '2 oz', expiry: nextDate(1095), source: 'Wilderness', checked: false },
+  // 72HR COMMS
+  { id: 17, name: 'NOAA Weather Radio (battery/hand-crank)', desc: 'Midland ER310 or similar', category: 'comms', priority: 'critical', scenario: '72hr', volume: 0.5, weight: '10 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 18, name: 'Cell phone + portable charger', desc: 'Phone in waterproof case, 10,000+ mAh bank', category: 'comms', priority: 'critical', scenario: '72hr', volume: 0.5, weight: '14 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 19, name: 'FRS/GMRS radios (pair)', desc: 'Midland GXT1000 or similar, 2-packs', category: 'comms', priority: 'medium', scenario: '72hr', volume: 0.8, weight: '1 lb', expiry: null, source: 'CERT', checked: false },
+  { id: 20, name: 'Signal mirror + whistle', desc: 'UST Survival whistle + glass signal mirror', category: 'comms', priority: 'high', scenario: '72hr', volume: 0.05, weight: '1 oz', expiry: null, source: 'Wilderness', checked: false },
+  // 72HR TOOLS
+  { id: 21, name: 'Flashlight + extra batteries', desc: '300+ lumen LED, 2 sets spare batteries', category: 'tools', priority: 'critical', scenario: '72hr', volume: 0.4, weight: '6 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 22, name: 'Multi-tool (Leatherman/Gerber)', desc: 'Pliers, knife, saw, screwdrivers', category: 'tools', priority: 'critical', scenario: '72hr', volume: 0.3, weight: '7 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 23, name: 'Fixed-blade knife', desc: '4–6" blade, full tang', category: 'tools', priority: 'high', scenario: '72hr', volume: 0.2, weight: '5 oz', expiry: null, source: 'Wilderness', checked: false },
+  { id: 24, name: 'Duct tape (mini roll)', desc: 'Gorilla Tape travel roll', category: 'tools', priority: 'medium', scenario: '72hr', volume: 0.2, weight: '4 oz', expiry: null, source: 'CERT', checked: false },
+  { id: 25, name: 'Paracord 550 (50 ft)', desc: 'Type III paracord, multiple uses', category: 'tools', priority: 'medium', scenario: '72hr', volume: 0.4, weight: '4 oz', expiry: null, source: 'CERT', checked: false },
+  { id: 26, name: 'Fire starting kit', desc: 'Bic lighter × 3, waterproof matches, ferro rod', category: 'tools', priority: 'critical', scenario: '72hr', volume: 0.2, weight: '3 oz', expiry: null, source: 'Wilderness', checked: false },
+  { id: 27, name: 'Headlamp + spare batteries', desc: '200+ lumen, hands-free', category: 'tools', priority: 'high', scenario: '72hr', volume: 0.3, weight: '3 oz', expiry: null, source: 'FEMA', checked: false },
+  // 72HR DOCS
+  { id: 28, name: 'Emergency document copies', desc: 'IDs, insurance, birth certs, passports — waterproof bag', category: 'docs', priority: 'critical', scenario: '72hr', volume: 0.2, weight: '4 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 29, name: 'Emergency cash (small bills)', desc: '$200+ minimum in mixed denominations', category: 'docs', priority: 'high', scenario: '72hr', volume: 0.05, weight: '1 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 30, name: 'Local maps (paper)', desc: 'City + county road maps, waterproofed', category: 'docs', priority: 'high', scenario: '72hr', volume: 0.2, weight: '4 oz', expiry: null, source: 'FEMA', checked: false },
+  // 72HR POWER
+  { id: 31, name: 'Portable battery bank (20,000+ mAh)', desc: 'Anker 20000 or equivalent — USB-A/C', category: 'power', priority: 'high', scenario: '72hr', volume: 0.6, weight: '14 oz', expiry: null, source: 'Custom', checked: false },
+  { id: 32, name: 'Solar charging panel (foldable)', desc: 'GoalZero Nomad 10 or similar', category: 'power', priority: 'medium', scenario: '72hr', volume: 0.8, weight: '8 oz', expiry: null, source: 'Custom', checked: false },
+  // 72HR HYGIENE
+  { id: 33, name: 'Sanitation supplies kit', desc: 'Toilet paper, waste bags, hand sanitizer, soap', category: 'hygiene', priority: 'critical', scenario: '72hr', volume: 1.0, weight: '1 lb', expiry: nextDate(365), source: 'FEMA', checked: false },
+  { id: 34, name: 'N95 masks (5+)', desc: 'NIOSH-approved respirators', category: 'hygiene', priority: 'high', scenario: '72hr', volume: 0.3, weight: '4 oz', expiry: nextDate(1825), source: 'CDC', checked: false },
+  // 72HR NAV
+  { id: 35, name: 'Compass (baseplate)', desc: 'Suunto A-10 or Silva Ranger', category: 'nav', priority: 'high', scenario: '72hr', volume: 0.1, weight: '1 oz', expiry: null, source: 'Wilderness', checked: false },
+  { id: 36, name: 'GPS device (handheld)', desc: 'Garmin eTrex or inReach Mini', category: 'nav', priority: 'medium', scenario: '72hr', volume: 0.3, weight: '5 oz', expiry: null, source: 'Custom', checked: false },
+
+  // GET-HOME BAG
+  { id: 37, name: 'Water (1L minimum)', desc: 'Nalgene or collapsible bottle', category: 'water', priority: 'critical', scenario: 'ghb', volume: 1.1, weight: '2.2 lb', expiry: null, source: 'FEMA', checked: false },
+  { id: 38, name: 'High-calorie energy bars (2000 cal)', desc: 'Clif, Kind, or Datrex', category: 'food', priority: 'critical', scenario: 'ghb', volume: 0.5, weight: '12 oz', expiry: nextDate(365), source: 'FEMA', checked: false },
+  { id: 39, name: 'Comfortable walking shoes + socks', desc: 'Extra pair in bag at all times', category: 'shelter', priority: 'critical', scenario: 'ghb', volume: 2.0, weight: '2 lb', expiry: null, source: 'CERT', checked: false },
+  { id: 40, name: 'Small first aid kit', desc: 'Boo-boo kit + blister care', category: 'medical', priority: 'high', scenario: 'ghb', volume: 0.5, weight: '8 oz', expiry: nextDate(730), source: 'RedCross', checked: false },
+  { id: 41, name: 'Phone charger + small battery bank', desc: '5,000 mAh minimum', category: 'power', priority: 'high', scenario: 'ghb', volume: 0.3, weight: '6 oz', expiry: null, source: 'Custom', checked: false },
+  { id: 42, name: 'Multi-tool or pocket knife', desc: 'Leatherman Squirt or Victorinox SAK', category: 'tools', priority: 'high', scenario: 'ghb', volume: 0.15, weight: '3 oz', expiry: null, source: 'CERT', checked: false },
+  { id: 43, name: 'Flashlight or headlamp', desc: '100+ lumen, spare batteries', category: 'tools', priority: 'high', scenario: 'ghb', volume: 0.3, weight: '3 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 44, name: 'Local paper map + compass', desc: 'Pre-plotted routes home from common locations', category: 'nav', priority: 'critical', scenario: 'ghb', volume: 0.1, weight: '2 oz', expiry: null, source: 'CERT', checked: false },
+  { id: 45, name: 'Rain poncho + emergency blanket', desc: 'Lightweight shelter from elements', category: 'shelter', priority: 'high', scenario: 'ghb', volume: 0.4, weight: '6 oz', expiry: null, source: 'FEMA', checked: false },
+  { id: 46, name: 'Emergency cash + ID copies', desc: '$50–100, laminated ID copy', category: 'docs', priority: 'high', scenario: 'ghb', volume: 0.05, weight: '1 oz', expiry: null, source: 'FEMA', checked: false },
+
+  // VEHICLE
+  { id: 47, name: 'Jumper cables or jump starter pack', desc: 'NOCO Boost or 10ft heavy gauge cables', category: 'tools', priority: 'critical', scenario: 'vehicle', volume: 2.0, weight: '3 lb', expiry: null, source: 'FEMA', checked: false },
+  { id: 48, name: 'First aid kit (vehicle)', desc: 'AAA or equivalent 100-pc kit', category: 'medical', priority: 'critical', scenario: 'vehicle', volume: 1.5, weight: '2 lb', expiry: nextDate(730), source: 'RedCross', checked: false },
+  { id: 49, name: 'Reflective triangles / flares', desc: '3-piece kit, DOT compliant', category: 'comms', priority: 'critical', scenario: 'vehicle', volume: 1.0, weight: '2 lb', expiry: null, source: 'FEMA', checked: false },
+  { id: 50, name: 'Tire inflation kit or spare', desc: 'Fix-a-Flat + compressor or full spare', category: 'tools', priority: 'critical', scenario: 'vehicle', volume: 2.0, weight: '5 lb', expiry: null, source: 'FEMA', checked: false },
+  { id: 51, name: 'Water (3 gallons in trunk)', desc: 'Stored in sealed containers', category: 'water', priority: 'high', scenario: 'vehicle', volume: 11.4, weight: '25 lb', expiry: nextDate(365), source: 'FEMA', checked: false },
+  { id: 52, name: 'Blankets (2)', desc: 'Wool or synthetic, compact', category: 'shelter', priority: 'high', scenario: 'vehicle', volume: 4.0, weight: '4 lb', expiry: null, source: 'FEMA', checked: false },
+  { id: 53, name: 'Multi-tool + work gloves', desc: 'For roadside emergency repairs', category: 'tools', priority: 'high', scenario: 'vehicle', volume: 0.5, weight: '12 oz', expiry: null, source: 'CERT', checked: false },
+  { id: 54, name: 'Emergency food bars (2-day)', desc: 'Datrex or Mayday bars', category: 'food', priority: 'high', scenario: 'vehicle', volume: 0.5, weight: '12 oz', expiry: nextDate(1825), source: 'FEMA', checked: false },
+];
+
+let bags = [];
+let nextId = items.length + 1;
+
+function nextDate(days) {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function daysUntilExpiry(dateStr) {
+  if (!dateStr) return null;
+  const diff = new Date(dateStr) - new Date();
+  return Math.ceil(diff / 86400000);
+}
+
+function expiryStatus(dateStr) {
+  const d = daysUntilExpiry(dateStr);
+  if (d === null) return null;
+  if (d < 0) return 'expired';
+  if (d <= 90) return 'warn';
+  return 'ok';
+}
+
+function scenarioItems(scenario) {
+  return items.filter(i => i.scenario === scenario);
+}
+
+function totalVolume(itemList) {
+  return itemList.reduce((s, i) => s + (parseFloat(i.volume) || 0), 0);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ─── SCENARIO / VIEW ─────────────────────────────────────────────────────────
+function setScenario(s) {
+  currentScenario = s;
+  currentFilter = 'all';
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  render();
+}
+
+function setView(v) {
+  currentView = v;
+  currentFilter = 'all';
+  render();
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  render();
+}
+
+// ─── SAVE ────────────────────────────────────────────────────────────────────
+function saveBag() {
+  const name = document.getElementById('bag-name').value.trim();
+  const liters = parseFloat(document.getElementById('bag-liters').value) || 0;
+  const scenario = document.getElementById('bag-scenario').value;
+  const dims = document.getElementById('bag-dims').value.trim();
+  const notes = document.getElementById('bag-notes').value.trim();
+  if (!name) { alert('Enter a bag name.'); return; }
+  bags.push({ id: Date.now(), name, liters, scenario, dims, notes });
+  document.getElementById('bag-name').value = '';
+  document.getElementById('bag-liters').value = '';
+  document.getElementById('bag-dims').value = '';
+  document.getElementById('bag-notes').value = '';
+  closeModal('bag-modal');
+  render();
+}
+
+function saveItem() {
+  const name = document.getElementById('item-name').value.trim();
+  if (!name) { alert('Enter item name.'); return; }
+  const item = {
+    id: nextId++,
+    name,
+    desc: document.getElementById('item-desc').value.trim(),
+    category: document.getElementById('item-category').value,
+    priority: document.getElementById('item-priority').value,
+    scenario: document.getElementById('item-scenario').value,
+    volume: parseFloat(document.getElementById('item-volume').value) || 0,
+    weight: document.getElementById('item-weight').value.trim(),
+    expiry: document.getElementById('item-expiry').value || null,
+    source: document.getElementById('item-source').value,
+    checked: false,
+  };
+  items.push(item);
+  document.getElementById('item-name').value = '';
+  document.getElementById('item-desc').value = '';
+  closeModal('item-modal');
+  render();
+}
+
+function toggleCheck(id) {
+  const item = items.find(i => i.id === id);
+  if (item) item.checked = !item.checked;
+  render();
+}
+
+function deleteItem(id) {
+  items = items.filter(i => i.id !== id);
+  render();
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  updateSidebarCounts();
+  renderBagList();
+  renderMain();
+}
+
+function updateSidebarCounts() {
+  Object.keys(SCENARIO_LABELS).forEach(s => {
+    const el = document.getElementById(`count-${s}`);
+    if (el) {
+      const list = scenarioItems(s);
+      el.textContent = `${list.filter(i => i.checked).length}/${list.length} packed`;
+    }
+  });
+}
+
+function renderBagList() {
+  const el = document.getElementById('bag-list');
+  if (!bags.length) { el.innerHTML = ''; return; }
+  el.innerHTML = bags.map(b => `
+    <div class="bag-btn" style="display:flex;align-items:center;padding:8px 20px;gap:8px;">
+      <span style="flex:1;font-size:12px;color:var(--text)">${b.name}</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">${b.liters}L</span>
+    </div>
+  `).join('');
+}
+
+function getFilteredItems() {
+  let list;
+  if (currentView === 'expiring') {
+    list = items.filter(i => { const s = expiryStatus(i.expiry); return s === 'warn'; });
+  } else if (currentView === 'expired') {
+    list = items.filter(i => expiryStatus(i.expiry) === 'expired');
+  } else if (currentView === 'missing') {
+    list = items.filter(i => i.scenario === currentScenario && !i.checked);
+  } else {
+    list = items.filter(i => i.scenario === currentScenario);
+  }
+
+  if (currentFilter !== 'all') list = list.filter(i => i.category === currentFilter);
+  if (searchQuery) list = list.filter(i =>
+    i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (i.desc || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  return list;
+}
+
+function renderMain() {
+  const main = document.getElementById('main-content');
+  const scenarioList = scenarioItems(currentScenario);
+  const filteredList = getFilteredItems();
+
+  const packed = scenarioList.filter(i => i.checked).length;
+  const total = scenarioList.length;
+  const pct = total ? Math.round(packed / total * 100) : 0;
+  const usedVol = totalVolume(scenarioList.filter(i => i.checked));
+  const totalVol = totalVolume(scenarioList);
+  const expiringSoon = items.filter(i => expiryStatus(i.expiry) === 'warn').length;
+  const expired = items.filter(i => expiryStatus(i.expiry) === 'expired').length;
+
+  // Assigned bag
+  const assignedBag = bags.find(b => b.scenario === currentScenario);
+  const bagCapacity = assignedBag ? assignedBag.liters : null;
+  const volPct = bagCapacity ? Math.min(100, Math.round(usedVol / bagCapacity * 100)) : null;
+  const gaugeColor = volPct > 90 ? 'var(--danger)' : volPct > 70 ? 'var(--warn)' : 'var(--accent)';
+
+  const circumference = 2 * Math.PI * 30;
+  const offset = circumference - (volPct || 0) / 100 * circumference;
+
+  // Group by category
+  const categories = [...new Set(filteredList.map(i => i.category))];
+
+  main.innerHTML = `
+    <div class="page-header">
+      <div>
+        <div class="page-title">${SCENARIO_ICONS[currentScenario]} ${SCENARIO_LABELS[currentScenario] || 'All Items'}</div>
+        <div class="page-subtitle">
+          ${currentView !== 'all' ? `VIEW: ${currentView.toUpperCase()} — ` : ''}
+          ${filteredList.length} items${bagCapacity ? ` · Bag: ${assignedBag.name} (${bagCapacity}L)` : ' · No bag assigned'}
+        </div>
+      </div>
+    </div>
+
+    ${(expiringSoon || expired) ? `
+    <div class="alert-banner">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-text">
+        <strong>Maintenance Required</strong>
+        ${expired ? `${expired} item(s) <span style="color:var(--danger)">expired</span>` : ''}
+        ${expiringSoon ? `${expiringSoon} item(s) expiring within 90 days` : ''}
+        — check the Expiring / Expired views.
+      </div>
+    </div>` : ''}
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" style="color:var(--accent)">${pct}%</div>
+        <div class="stat-label">Packed Complete</div>
+        <div class="progress-bar" style="margin-top:8px">
+          <div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${packed}/${total}</div>
+        <div class="stat-label">Items Checked</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color:${volPct > 90 ? 'var(--danger)' : 'var(--text)'}">
+          ${totalVol.toFixed(1)}L
+        </div>
+        <div class="stat-label">Total Item Volume${bagCapacity ? ` / ${bagCapacity}L cap` : ''}</div>
+        ${bagCapacity ? `<div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${Math.min(100,Math.round(totalVol/bagCapacity*100))}%;background:${totalVol/bagCapacity>1?'var(--danger)':'var(--good)'}"></div></div>` : ''}
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color:${expired?'var(--danger)':expiringSoon?'var(--warn)':'var(--good)'}">
+          ${expired + expiringSoon}
+        </div>
+        <div class="stat-label">Need Rotation</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-chip ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">All</button>
+      ${['water','food','shelter','medical','comms','tools','docs','power','hygiene','nav'].map(c =>
+        `<button class="filter-chip ${currentFilter===c?'active':''}" onclick="setFilter('${c}')">${CAT_LABELS[c]}</button>`
+      ).join('')}
+      <input class="search-box" placeholder="🔍 Search items..." oninput="searchQuery=this.value;renderMain()" value="${searchQuery}">
+    </div>
+
+    ${filteredList.length === 0 ? `
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">No items here</div>
+        <div>Add items using the + Add Item button, or adjust your filters.</div>
+      </div>
+    ` : categories.map(cat => {
+      const catItems = filteredList.filter(i => i.category === cat);
+      const catPacked = catItems.filter(i => i.checked).length;
+      return `
+        <div class="section-group">
+          <div class="section-group-title">
+            <div class="section-group-name">${CAT_LABELS[cat]}</div>
+            <div class="section-progress">${catPacked}/${catItems.length} packed</div>
+          </div>
+          <div class="item-table">
+            <div class="table-head">
+              <div class="th"></div>
+              <div class="th">Item</div>
+              <div class="th">Category</div>
+              <div class="th">Priority</div>
+              <div class="th">Volume</div>
+              <div class="th">Expiry</div>
+              <div class="th">Source</div>
+              <div class="th"></div>
+            </div>
+            ${catItems.map(item => renderItemRow(item)).join('')}
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+function renderItemRow(item) {
+  const es = expiryStatus(item.expiry);
+  const d = daysUntilExpiry(item.expiry);
+  let expiryLabel = '—';
+  let statusClass = '';
+  if (item.expiry) {
+    if (es === 'expired') { expiryLabel = `Exp ${d < -365 ? '>1yr ago' : Math.abs(d)+'d ago'}`; statusClass = 'status-expired'; }
+    else if (es === 'warn') { expiryLabel = `${d}d`; statusClass = 'status-warn'; }
+    else { const dt = new Date(item.expiry); expiryLabel = dt.toLocaleDateString('en-US',{month:'short',year:'numeric'}); statusClass = 'status-ok'; }
+  }
+  const pcolor = PRIORITY_COLORS[item.priority] || 'var(--muted)';
+  const volMax = 5;
+  const volFill = Math.min(100, (item.volume / volMax) * 100);
+
+  return `
+    <div class="item-row" style="${item.checked ? 'opacity:0.55' : ''}">
+      <div class="item-check ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${item.id})">${item.checked ? '✓' : ''}</div>
+      <div>
+        <div class="item-name" style="${item.checked ? 'text-decoration:line-through' : ''}">${item.name}</div>
+        <div class="item-desc">${item.desc || ''}</div>
+        <div class="source-tag">▸ ${item.source}</div>
+      </div>
+      <div class="td">
+        <span class="category-pill cat-${item.category}">${CAT_LABELS[item.category]?.split(' ')[0]}</span>
+      </div>
+      <div class="td">
+        <span class="priority-dot" style="background:${pcolor}"></span>${item.priority}
+      </div>
+      <div class="td">
+        <div>${item.volume ? item.volume + 'L' : '—'}</div>
+        ${item.volume ? `<div class="vol-bar" style="margin-top:4px"><div class="vol-bar-fill" style="width:${volFill}%"></div></div>` : ''}
+      </div>
+      <div class="td">
+        ${es ? `<span class="status-badge ${statusClass}">${expiryLabel}</span>` : '—'}
+      </div>
+      <div class="td" style="font-size:10px;color:var(--muted)">${item.source}</div>
+      <div class="row-actions">
+        <button class="icon-btn" title="Delete" onclick="deleteItem(${item.id})">🗑</button>
+      </div>
+    </div>
+  `;
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
