@@ -418,6 +418,43 @@ main { padding: 28px; overflow-y: auto; }
 .dv-icon { font-size: 20px; width: 28px; flex-shrink: 0; }
 .dv-count { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
 
+/* ── RECOMMENDATION PANEL ───────────────────────────────────── */
+.reco-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+  z-index: 250; align-items: flex-end; backdrop-filter: blur(2px);
+}
+.reco-overlay.open { display: flex; }
+.reco-panel {
+  background: var(--surface); border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0; width: 100%; max-height: 84vh;
+  display: flex; flex-direction: column;
+  transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.32,0.72,0,1);
+}
+.reco-overlay.open .reco-panel { transform: translateY(0); }
+.reco-handle-bar { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
+.reco-header { padding: 10px 20px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.reco-header-row { display: flex; align-items: flex-start; justify-content: space-between; }
+.reco-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--accent); }
+.reco-subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 3px; }
+.reco-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.reco-status { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 10px; min-height: 18px; }
+.reco-text { font-size: 13px; line-height: 1.75; color: var(--text); white-space: pre-wrap; word-wrap: break-word; }
+.reco-footer { padding: 10px 16px 16px; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 8px; align-items: center; }
+.reco-key-input {
+  flex: 1; padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; outline: none; transition: border-color 0.15s;
+}
+.reco-key-input:focus { border-color: var(--accent); }
+.reco-key-input::placeholder { color: var(--muted); }
+@keyframes reco-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+.reco-cursor { display: inline-block; color: var(--accent); animation: reco-blink 1s step-end infinite; }
+@keyframes reco-dot { 0%,80%,100%{opacity:.25} 40%{opacity:1} }
+.reco-dots { display: inline-flex; gap: 4px; align-items: center; vertical-align: middle; }
+.reco-dots i { display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: reco-dot 1.2s ease-in-out infinite; font-style: normal; }
+.reco-dots i:nth-child(2) { animation-delay: .2s; }
+.reco-dots i:nth-child(3) { animation-delay: .4s; }
+
 /* ── DESKTOP OVERRIDES (768px+) ─────────────────────────────── */
 @media (min-width: 768px) {
   header { padding: 0 24px; }
@@ -434,6 +471,10 @@ main { padding: 28px; overflow-y: auto; }
   .drawer-overlay { display: none !important; }
   .drawer { display: none !important; }
   .stats-row { grid-template-columns: repeat(4, 1fr); }
+  .reco-overlay { justify-content: center; align-items: center; }
+  .reco-panel { max-width: 560px; border-radius: 12px; border: 1px solid var(--border); transform: none; max-height: 80vh; }
+  .reco-overlay.open .reco-panel { transform: none; }
+  .reco-handle-bar { display: none; }
 }
 </style>
 </head>
@@ -589,6 +630,10 @@ main { padding: 28px; overflow-y: auto; }
       <span class="dv-icon">❌</span> Expired
       <span class="dv-count" id="more-count-expired"></span>
     </button>
+    <button class="drawer-view-btn" onclick="closeAllDrawers();openRecoKeyPanel()">
+      <span class="dv-icon">🔑</span> API Key
+      <span class="dv-count" id="more-apikey-status"></span>
+    </button>
     <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
       <button class="btn btn-primary" style="width:100%" onclick="openModal('item-modal');closeAllDrawers()">＋ Add Custom Item</button>
     </div>
@@ -721,6 +766,27 @@ main { padding: 28px; overflow-y: auto; }
       <button class="btn btn-ghost" onclick="closeModal('item-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveItem()">Add Item</button>
     </div>
+  </div>
+</div>
+
+<!-- RECOMMENDATION PANEL -->
+<div class="reco-overlay" id="reco-overlay" onclick="if(event.target===this)closeReco()">
+  <div class="reco-panel">
+    <div class="reco-handle-bar"></div>
+    <div class="reco-header">
+      <div class="reco-header-row">
+        <div>
+          <div class="reco-title">✨ Recommendations</div>
+          <div class="reco-subtitle" id="reco-item-label">—</div>
+        </div>
+        <button class="icon-btn" onclick="closeReco()" style="font-size:20px;padding:4px 8px;margin-top:2px">×</button>
+      </div>
+    </div>
+    <div class="reco-body" id="reco-body">
+      <div class="reco-status" id="reco-status"></div>
+      <div class="reco-text" id="reco-text"></div>
+    </div>
+    <div class="reco-footer" id="reco-footer"></div>
   </div>
 </div>
 
@@ -1143,7 +1209,10 @@ function renderItemRow(item) {
       </div>
       <div class="td">${es ? '<span class="status-badge ' + statusClass + '">' + expiryLabel + '</span>' : '—'}</div>
       <div class="td" style="font-size:10px">${item.source}</div>
-      <div class="row-actions"><button class="icon-btn" onclick="deleteItem(${item.id})">🗑</button></div>
+      <div class="row-actions">
+        <button class="icon-btn" onclick="event.stopPropagation();openReco(${item.id})" title="Get recommendations">✨</button>
+        <button class="icon-btn" onclick="deleteItem(${item.id})">🗑</button>
+      </div>
     </div>
   `;
 }
@@ -1238,6 +1307,7 @@ function renderMobileCard(item) {
             ${expiryBadge}
           </div>
         </div>
+        <button class="icon-btn" onclick="event.stopPropagation();openReco(${item.id})" style="flex-shrink:0;margin-left:4px" title="Get recommendations">✨</button>
         <button class="icon-btn" onclick="event.stopPropagation();deleteItem(${item.id})" style="flex-shrink:0;margin-left:4px">🗑</button>
       </div>
     </div>
@@ -1327,6 +1397,184 @@ function updateMoreCounts() {
   el('more-count-missing',  list.filter(i => !i.checked).length + ' items');
   el('more-count-expiring', items.filter(i => expiryStatus(i.expiry) === 'warn').length + ' items');
   el('more-count-expired',  items.filter(i => expiryStatus(i.expiry) === 'expired').length + ' items');
+  el('more-apikey-status',  localStorage.getItem('ready_apikey') ? '✓ set' : 'not set');
+}
+
+// ── RECOMMENDATIONS ───────────────────────────────────────────
+function openReco(itemId) {
+  const item = items.find(i => i.id === itemId);
+  if (!item) return;
+  document.getElementById('reco-overlay').dataset.itemId = String(itemId);
+  document.getElementById('reco-item-label').textContent = item.name + ' — ' + (SCENARIO_LABELS[item.scenario] || item.scenario);
+  document.getElementById('reco-status').textContent = '';
+  document.getElementById('reco-text').innerHTML = '';
+  updateRecoFooter();
+  document.getElementById('reco-overlay').classList.add('open');
+  const key = localStorage.getItem('ready_apikey');
+  if (key) {
+    getRecommendations(item, key);
+  } else {
+    document.getElementById('reco-status').textContent = 'Enter your Anthropic API key below to enable product recommendations.';
+  }
+}
+
+function openRecoKeyPanel() {
+  document.getElementById('reco-overlay').dataset.itemId = '';
+  document.getElementById('reco-item-label').textContent = 'Product Recommendations';
+  document.getElementById('reco-status').textContent = '';
+  document.getElementById('reco-text').innerHTML = '<span style="color:var(--muted)">Tap ✨ on any item to get AI-powered product recommendations using Claude Opus 4.7 with live web search.</span>';
+  updateRecoFooter();
+  document.getElementById('reco-overlay').classList.add('open');
+}
+
+function closeReco() {
+  document.getElementById('reco-overlay').classList.remove('open');
+}
+
+function updateRecoFooter() {
+  const footer = document.getElementById('reco-footer');
+  const key = localStorage.getItem('ready_apikey');
+  if (key) {
+    footer.innerHTML = `<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--good)">🔑 API key saved</span><button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="clearRecoKey()">Remove</button>`;
+  } else {
+    footer.innerHTML = `<input class="reco-key-input" id="reco-key-input" type="password" placeholder="Paste Anthropic API key to enable..." autocomplete="off"><button class="btn btn-primary btn-sm" onclick="saveRecoKey()">Save Key</button>`;
+  }
+}
+
+function saveRecoKey() {
+  const input = document.getElementById('reco-key-input');
+  const key = (input ? input.value : '').trim();
+  if (!key) return;
+  localStorage.setItem('ready_apikey', key);
+  updateRecoFooter();
+  const itemId = parseInt(document.getElementById('reco-overlay').dataset.itemId);
+  const item = items.find(i => i.id === itemId);
+  if (item) {
+    document.getElementById('reco-status').textContent = '';
+    document.getElementById('reco-text').innerHTML = '';
+    getRecommendations(item, key);
+  }
+}
+
+function clearRecoKey() {
+  localStorage.removeItem('ready_apikey');
+  updateRecoFooter();
+  document.getElementById('reco-status').textContent = 'API key removed. Enter a new key to re-enable recommendations.';
+  document.getElementById('reco-text').innerHTML = '';
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderMarkdown(text) {
+  return escHtml(text)
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/^#{1,2} (.+)$/gm,'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:17px;letter-spacing:1px;color:var(--accent);margin:18px 0 4px;display:block">$1</div>')
+    .replace(/^### (.+)$/gm,'<div style="font-weight:600;font-size:13px;color:var(--text);margin:12px 0 3px">$1</div>')
+    .replace(/^[-*•] (.+)$/gm,'<div style="padding-left:14px;margin:3px 0;color:var(--muted)"><span style="color:var(--accent);margin-right:6px">▸</span>$1</div>')
+    .replace(/---+/g,'<hr style="border:none;border-top:1px solid var(--border);margin:14px 0">')
+    .replace(/\n/g,'<br>');
+}
+
+async function getRecommendations(item, apiKey) {
+  const statusEl = document.getElementById('reco-status');
+  const textEl = document.getElementById('reco-text');
+  const bodyEl = document.getElementById('reco-body');
+
+  statusEl.innerHTML = '<span class="reco-dots"><i></i><i></i><i></i></span> <span style="color:var(--muted)">Connecting...</span>';
+  textEl.innerHTML = '';
+
+  const prompt = `I'm building a ${SCENARIO_LABELS[item.scenario] || item.scenario} preparedness kit. I need specific product recommendations for: **${item.name}**
+${item.desc ? '\nItem context: ' + item.desc : ''}
+Category: ${item.category} | Priority: ${item.priority}
+
+Please search for and recommend exactly 2–3 specific products available for purchase right now. For each, include:
+- Exact brand and model name
+- Current price (with retailer)
+- Key specs relevant to emergency preparedness
+- Main advantage and one tradeoff vs alternatives
+
+Be specific — actual product names with current pricing, not general categories.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'web-search-2026-02-09',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-7',
+        max_tokens: 2048,
+        thinking: { type: 'adaptive' },
+        tools: [{ type: 'web_search_20260209', name: 'web_search' }],
+        stream: true,
+        system: 'You are a preparedness gear expert. Search the web for current products, pricing, and reviews. Provide specific product recommendations with actual model names and current prices. Be direct and practical.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      let msg = 'API error ' + res.status;
+      try { const e = await res.json(); msg = e.error?.message || msg; } catch {}
+      if (res.status === 401) {
+        statusEl.textContent = '⚠ Invalid API key — check and re-enter below.';
+        localStorage.removeItem('ready_apikey');
+        updateRecoFooter();
+      } else {
+        statusEl.textContent = '⚠ ' + msg;
+      }
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '', fullText = '', blockType = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (!raw) continue;
+        try {
+          const ev = JSON.parse(raw);
+          if (ev.type === 'content_block_start') {
+            blockType = ev.content_block?.type;
+            if (blockType === 'tool_use') {
+              statusEl.innerHTML = '<span style="color:var(--accent)">🔍 Searching the web...</span>';
+            } else if (blockType === 'text') {
+              statusEl.innerHTML = '<span class="reco-dots"><i></i><i></i><i></i></span> <span style="color:var(--muted)">Writing recommendations...</span>';
+            }
+          } else if (ev.type === 'content_block_delta' && blockType === 'text' && ev.delta?.type === 'text_delta') {
+            fullText += ev.delta.text;
+            textEl.innerHTML = escHtml(fullText) + '<span class="reco-cursor">▌</span>';
+            bodyEl.scrollTop = bodyEl.scrollHeight;
+          } else if (ev.type === 'content_block_stop' && blockType === 'text') {
+            textEl.innerHTML = renderMarkdown(fullText);
+            statusEl.textContent = '';
+            blockType = null;
+          } else if (ev.type === 'message_stop') {
+            statusEl.textContent = '';
+            if (fullText) textEl.innerHTML = renderMarkdown(fullText);
+          }
+        } catch {}
+      }
+    }
+
+    if (!fullText) statusEl.textContent = 'No recommendations returned. Try again.';
+
+  } catch (err) {
+    statusEl.textContent = '⚠ ' + (err.message || 'Request failed');
+  }
 }
 
 // ── INIT ──────────────────────────────────────────────────────
