@@ -486,6 +486,7 @@ main { padding: 28px; overflow-y: auto; }
     <div class="logo-tag">PREPAREDNESS GEAR TRACKER</div>
   </div>
   <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openModal('import-bag-modal')">↗ Import Bag</button>
     <button class="btn btn-ghost btn-sm" onclick="openModal('bag-modal')">＋ Add Bag</button>
     <button class="btn btn-primary btn-sm" onclick="openModal('item-modal')">＋ Add Item</button>
   </div>
@@ -710,6 +711,34 @@ main { padding: 28px; overflow-y: auto; }
       <button class="btn btn-ghost" onclick="closeModal('bag-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveBag()">Register Bag</button>
     </div>
+  </div>
+</div>
+
+<!-- IMPORT BAG MODAL -->
+<div class="modal-overlay" id="import-bag-modal">
+  <div class="modal">
+    <div class="modal-title">↗ Import Bag from URL</div>
+    <div id="import-step-1">
+      <div class="form-group">
+        <label class="form-label">Product Page URL</label>
+        <input class="form-input" id="import-url" placeholder="Amazon, REI, manufacturer page...">
+      </div>
+      <div id="import-key-row" style="display:none">
+        <div style="background:rgba(200,240,96,0.06);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--muted)">
+          Anthropic API key required to look up bag specs.
+        </div>
+        <div class="form-group">
+          <label class="form-label">API Key</label>
+          <input class="form-input" id="import-apikey-input" type="password" placeholder="sk-ant-...">
+        </div>
+      </div>
+      <div id="import-status" style="min-height:18px;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:11px"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal('import-bag-modal')">Cancel</button>
+        <button class="btn btn-primary" id="import-lookup-btn" onclick="lookupBag()">Look Up Bag</button>
+      </div>
+    </div>
+    <div id="import-step-2" style="display:none"></div>
   </div>
 </div>
 
@@ -1471,6 +1500,7 @@ function renderBagsDrawer() {
         <div class="empty-title">No bags registered</div>
         <div style="margin-top:14px">
           <button class="btn btn-primary" onclick="openModal('bag-modal');closeAllDrawers()">＋ Register a Bag</button>
+          <button class="btn btn-ghost" style="margin-top:8px;border-color:var(--accent);color:var(--accent)" onclick="openModal('import-bag-modal');closeAllDrawers()">↗ Import from URL</button>
         </div>
       </div>`;
     return;
@@ -1496,6 +1526,7 @@ function renderBagsDrawer() {
     `;
   }).join('') + `
     <button class="btn btn-ghost" style="width:100%;margin-top:4px" onclick="openModal('bag-modal');closeAllDrawers()">＋ Register Another Bag</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px;border-color:var(--accent);color:var(--accent)" onclick="openModal('import-bag-modal');closeAllDrawers()">↗ Import Bag from URL</button>
   `;
 }
 
@@ -1545,6 +1576,184 @@ function updateMoreCounts() {
   el('more-count-expiring', items.filter(i => expiryStatus(i.expiry) === 'warn').length + ' items');
   el('more-count-expired',  items.filter(i => expiryStatus(i.expiry) === 'expired').length + ' items');
   el('more-apikey-status',  localStorage.getItem('ready_apikey') ? '✓ set' : 'not set');
+}
+
+// ── IMPORT BAG FROM URL ───────────────────────────────────────
+function lookupBag() {
+  const url = document.getElementById('import-url').value.trim();
+  if (!url) { document.getElementById('import-status').innerHTML = '<span style="color:var(--danger)">Enter a product URL.</span>'; return; }
+
+  const savedKey = localStorage.getItem('ready_apikey');
+  const inputKey = document.getElementById('import-apikey-input')?.value.trim();
+  const key = savedKey || inputKey;
+
+  if (!key) {
+    document.getElementById('import-key-row').style.display = 'block';
+    document.getElementById('import-status').innerHTML = '<span style="color:var(--muted)">Enter your API key above.</span>';
+    return;
+  }
+  if (inputKey && !savedKey) {
+    localStorage.setItem('ready_apikey', inputKey);
+    updateRecoFooter();
+  }
+
+  const btn = document.getElementById('import-lookup-btn');
+  const status = document.getElementById('import-status');
+  btn.disabled = true;
+  btn.textContent = 'Looking up...';
+  status.innerHTML = '<span style="color:var(--accent)"><span class="reco-dots"><i></i><i></i><i></i></span> Searching for bag specs...</span>';
+
+  callClaudeForBagSpecs(url, key)
+    .then(specs => showImportPreview(specs))
+    .catch(err => {
+      status.innerHTML = '<span style="color:var(--danger)">⚠ ' + escHtml(err.message) + '</span>';
+      btn.disabled = false;
+      btn.textContent = 'Try Again';
+    });
+}
+
+async function callClaudeForBagSpecs(productUrl, apiKey) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'web-search-2026-02-09',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-7',
+      max_tokens: 1024,
+      thinking: { type: 'adaptive' },
+      tools: [{ type: 'web_search_20260209', name: 'web_search' }],
+      system: `You are a preparedness gear expert. Search for the bag at the given URL and extract its specs. Return ONLY a single valid JSON object — no markdown, no explanation, nothing else.
+
+Available scenarios and when to use them:
+- "72hr": 40–65L evacuation pack, 72-hour kit
+- "ghb": 20–40L get-home bag, urban carry
+- "sip": not typically a bag
+- "vehicle": hard cases, duffels stored in cars
+- "wildfire": fast grab-and-go bags, 30–50L
+- "earthquake": rescue/CERT gear bags
+- "edc": <10L, everyday carry, sling bags, hip packs
+- "inch": >60L, rolling luggage, large expedition packs
+- "wush": 10–20L, rapid-grab document/comms bags
+
+JSON schema:
+{
+  "name": "Full product name with brand",
+  "liters": 40,
+  "litersExpanded": null,
+  "dims": "21\\"H × 12\\"W × 8\\"D",
+  "notes": "Key features in 1–2 sentences",
+  "suggestedScenario": "ghb",
+  "scenarioReason": "One sentence explaining why this scenario fits"
+}`,
+      messages: [{ role: 'user', content: 'Extract bag specs and return JSON for: ' + productUrl }]
+    })
+  });
+
+  if (!res.ok) {
+    let msg = 'API error ' + res.status;
+    try { const e = await res.json(); msg = e.error?.message || msg; } catch {}
+    if (res.status === 401) { localStorage.removeItem('ready_apikey'); updateRecoFooter(); }
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  const textBlock = data.content.find(b => b.type === 'text');
+  if (!textBlock) throw new Error('No response received from Claude.');
+
+  const jsonMatch = textBlock.text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('Could not parse bag specs. Try a different URL.');
+
+  let specs;
+  try { specs = JSON.parse(jsonMatch[0]); } catch { throw new Error('Invalid JSON in response. Try again.'); }
+  if (!specs.name) throw new Error('Could not extract bag name. Try a manufacturer or retailer URL.');
+  return specs;
+}
+
+function showImportPreview(specs) {
+  document.getElementById('import-step-1').style.display = 'none';
+  const step2 = document.getElementById('import-step-2');
+  step2.style.display = 'block';
+
+  const scenarioIcon = SCENARIO_ICONS[specs.suggestedScenario] || '🎒';
+  const scenarioLabel = SCENARIO_LABELS[specs.suggestedScenario] || specs.suggestedScenario;
+  const optionsHtml = Object.keys(SCENARIO_LABELS).map(k =>
+    `<option value="${k}"${k === specs.suggestedScenario ? ' selected' : ''}>${SCENARIO_ICONS[k]} ${SCENARIO_LABELS[k]}</option>`
+  ).join('');
+
+  step2.innerHTML = `
+    <div style="background:rgba(200,240,96,0.07);border:1px solid rgba(200,240,96,0.3);border-radius:8px;padding:12px 16px;margin-bottom:18px">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:1px;margin-bottom:8px">✦ SUGGESTED SCENARIO</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:24px">${scenarioIcon}</span>
+        <span style="font-weight:600;font-size:15px">${scenarioLabel}</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5">${escHtml(specs.scenarioReason || '')}</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Bag Name</label>
+      <input class="form-input" id="ibag-name" value="${escHtml(specs.name || '')}">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Volume (L)</label>
+        <input class="form-input" id="ibag-liters" type="number" value="${specs.liters || ''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expanded Volume (L)</label>
+        <input class="form-input" id="ibag-liters-expanded" type="number" value="${specs.litersExpanded || ''}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Assign to Scenario</label>
+        <select class="form-select" id="ibag-scenario">${optionsHtml}</select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dimensions</label>
+        <input class="form-input" id="ibag-dims" value="${escHtml(specs.dims || '')}">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes / Features</label>
+      <input class="form-input" id="ibag-notes" value="${escHtml(specs.notes || '')}">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="resetImportBagModal()">← Back</button>
+      <button class="btn btn-primary" onclick="confirmImportBag()">Register Bag</button>
+    </div>
+  `;
+}
+
+function confirmImportBag() {
+  const name = document.getElementById('ibag-name').value.trim();
+  if (!name) { alert('Bag name is required.'); return; }
+  bags.push({
+    id: Date.now(),
+    name,
+    liters: parseFloat(document.getElementById('ibag-liters').value) || 0,
+    litersExpanded: parseFloat(document.getElementById('ibag-liters-expanded').value) || null,
+    scenario: document.getElementById('ibag-scenario').value,
+    dims: document.getElementById('ibag-dims').value.trim(),
+    notes: document.getElementById('ibag-notes').value.trim(),
+  });
+  closeModal('import-bag-modal');
+  resetImportBagModal();
+  render();
+}
+
+function resetImportBagModal() {
+  document.getElementById('import-step-1').style.display = 'block';
+  document.getElementById('import-step-2').style.display = 'none';
+  document.getElementById('import-url').value = '';
+  document.getElementById('import-status').innerHTML = '';
+  document.getElementById('import-key-row').style.display = 'none';
+  const btn = document.getElementById('import-lookup-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Look Up Bag'; }
 }
 
 // ── RECOMMENDATIONS ───────────────────────────────────────────
