@@ -1625,7 +1625,6 @@ async function callClaudeForBagSpecs(productUrl, apiKey) {
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
-      thinking: { type: 'adaptive' },
       tools: [{ type: 'web_search_20260209', name: 'web_search' }],
       system: `You are a preparedness gear expert. Search for the bag at the given URL and extract its specs. Return ONLY a single valid JSON object — no markdown, no explanation, nothing else.
 
@@ -1866,7 +1865,6 @@ Be specific — actual product names with current pricing, not general categorie
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 2048,
-        thinking: { type: 'adaptive' },
         tools: [{ type: 'web_search_20260209', name: 'web_search' }],
         stream: true,
         system: 'You are a preparedness gear expert. Search the web for current products, pricing, and reviews. Provide specific product recommendations with actual model names and current prices. Be direct and practical.',
