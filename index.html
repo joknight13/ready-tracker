@@ -6,656 +6,435 @@
 <title>READY — Preparedness Gear Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d0f0e;
-    --surface: #161a18;
-    --surface2: #1e2421;
-    --border: #2a3030;
-    --accent: #c8f060;
-    --accent2: #ff6b35;
-    --warn: #ffb347;
-    --danger: #ff4444;
-    --text: #e8ede8;
-    --muted: #7a8c82;
-    --good: #4ecb71;
-  }
+:root {
+  --bg: #0d0f0e;
+  --surface: #161a18;
+  --surface2: #1e2421;
+  --border: #2a3030;
+  --accent: #c8f060;
+  --accent2: #ff6b35;
+  --warn: #ffb347;
+  --danger: #ff4444;
+  --text: #e8ede8;
+  --muted: #7a8c82;
+  --good: #4ecb71;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Sans', sans-serif;
-    min-height: 100vh;
-    font-size: 14px;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
 
-  /* HEADER */
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 56px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+/* ── HEADER ─────────────────────────────────────────────────── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
 
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 4px;
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 4px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-  .logo-tag {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    margin-top: 4px;
-  }
+.logo-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
 
-  .header-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
+.header-actions { display: none; }
 
-  /* LAYOUT */
+/* ── SCENARIO STRIP (mobile) ────────────────────────────────── */
+.scenario-strip {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: none;
+  position: sticky;
+  top: 56px;
+  z-index: 90;
+  -webkit-overflow-scrolling: touch;
+}
+.scenario-strip::-webkit-scrollbar { display: none; }
+
+.scenario-pill {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.scenario-pill.active {
+  background: var(--accent);
+  color: #0d0f0e;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── DESKTOP APP GRID (off by default) ──────────────────────── */
+.app { display: none; }
+
+/* ── SIDEBAR ────────────────────────────────────────────────── */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  overflow-y: auto;
+}
+.sidebar-section { margin-bottom: 24px; }
+.sidebar-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  padding: 0 20px 8px;
+  text-transform: uppercase;
+}
+.scenario-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s;
+  border-left: 3px solid transparent;
+}
+.scenario-btn:hover { background: var(--surface2); }
+.scenario-btn.active { background: var(--surface2); border-left-color: var(--accent); color: var(--accent); }
+.scenario-icon { font-size: 18px; flex-shrink: 0; }
+.scenario-meta { display: flex; flex-direction: column; gap: 2px; }
+.scenario-count { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
+.bag-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 8px 20px; background: none; border: none;
+  color: var(--muted); cursor: pointer; text-align: left;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; transition: color 0.15s;
+}
+.bag-btn:hover { color: var(--text); }
+.add-bag-btn {
+  display: flex; align-items: center; gap: 6px;
+  width: calc(100% - 40px); margin: 8px 20px; padding: 8px 12px;
+  background: var(--surface2); border: 1px dashed var(--border); border-radius: 4px;
+  color: var(--muted); cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px; letter-spacing: 1px; transition: all 0.15s;
+}
+.add-bag-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── MAIN (desktop) ─────────────────────────────────────────── */
+main { padding: 28px; overflow-y: auto; }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 20px; }
+.page-title { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 3px; color: var(--text); line-height: 1; }
+.page-subtitle { color: var(--muted); font-size: 12px; margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
+
+/* ── BUTTONS ────────────────────────────────────────────────── */
+.btn {
+  padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.5px; transition: all 0.15s;
+}
+.btn-primary { background: var(--accent); color: #0d0f0e; }
+.btn-primary:hover { background: #b8e050; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.btn-ghost:hover { border-color: var(--text); color: var(--text); }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+
+/* ── STATS ROW (desktop) ────────────────────────────────────── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;
+}
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+.stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 1px; line-height: 1; margin-bottom: 2px; }
+.stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── FILTER BAR ─────────────────────────────────────────────── */
+.filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.filter-chip {
+  padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--muted); cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; transition: all 0.15s;
+}
+.filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+.filter-chip.active { background: var(--accent); color: #0d0f0e; border-color: var(--accent); font-weight: 600; }
+.search-box {
+  margin-left: auto; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; width: 200px; outline: none; transition: border-color 0.15s;
+}
+.search-box:focus { border-color: var(--accent); }
+.search-box::placeholder { color: var(--muted); }
+
+/* ── ITEM TABLE (desktop) ───────────────────────────────────── */
+.item-table { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.table-head {
+  display: grid; grid-template-columns: 28px 1fr 90px 80px 80px 90px 90px 60px;
+  padding: 10px 16px; background: var(--surface2); border-bottom: 1px solid var(--border);
+}
+.th { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; }
+.item-row {
+  display: grid; grid-template-columns: 28px 1fr 90px 80px 80px 90px 90px 60px;
+  padding: 11px 16px; border-bottom: 1px solid var(--border); align-items: center;
+  transition: background 0.1s; cursor: pointer;
+}
+.item-row:last-child { border-bottom: none; }
+.item-row:hover { background: var(--surface2); }
+.item-check {
+  width: 16px; height: 16px; border-radius: 3px; border: 2px solid var(--border);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.item-check.checked { background: var(--accent); border-color: var(--accent); color: #0d0f0e; font-size: 10px; }
+.item-name { font-weight: 500; font-size: 13px; }
+.item-desc { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+.category-pill {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500;
+}
+.td { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); }
+.priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+
+.status-badge { padding: 3px 8px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; }
+.status-ok { background: rgba(78,203,113,0.15); color: var(--good); }
+.status-warn { background: rgba(255,179,71,0.15); color: var(--warn); }
+.status-expired { background: rgba(255,68,68,0.15); color: var(--danger); }
+.status-missing { background: rgba(122,140,130,0.12); color: var(--muted); }
+
+.progress-bar { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+
+/* ── CATEGORY COLORS ────────────────────────────────────────── */
+.cat-water   { background: rgba(100,180,255,0.15); color: #64b4ff; }
+.cat-food    { background: rgba(255,179,71,0.15);  color: var(--warn); }
+.cat-shelter { background: rgba(78,203,113,0.15);  color: var(--good); }
+.cat-medical { background: rgba(255,100,100,0.15); color: #ff6464; }
+.cat-comms   { background: rgba(200,240,96,0.15);  color: var(--accent); }
+.cat-tools   { background: rgba(180,140,255,0.15); color: #b48cff; }
+.cat-docs    { background: rgba(255,107,53,0.15);  color: var(--accent2); }
+.cat-power   { background: rgba(255,220,100,0.15); color: #ffdc64; }
+.cat-hygiene { background: rgba(150,220,200,0.15); color: #96dcc8; }
+.cat-nav     { background: rgba(200,160,100,0.15); color: #c8a064; }
+
+/* ── MODAL ──────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 28px; width: 480px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+}
+.modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; margin-bottom: 20px; color: var(--accent); }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.form-input, .form-select {
+  width: 100%; padding: 9px 12px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px; outline: none; transition: border-color 0.15s;
+}
+.form-input:focus, .form-select:focus { border-color: var(--accent); }
+.form-select option { background: var(--surface2); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+/* ── SECTION GROUP (desktop) ────────────────────────────────── */
+.section-group { margin-bottom: 32px; }
+.section-group-title { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.section-group-name { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px; }
+.section-progress { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); margin-left: auto; }
+
+.alert-banner {
+  background: rgba(255,179,71,0.08); border: 1px solid rgba(255,179,71,0.3);
+  border-radius: 6px; padding: 12px 16px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.alert-icon { font-size: 18px; }
+.alert-text { font-size: 12px; color: var(--warn); }
+.alert-text strong { display: block; margin-bottom: 2px; font-size: 13px; }
+
+.vol-bar { width: 48px; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.vol-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; opacity: 0.7; }
+.row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.icon-btn { background: none; border: none; cursor: pointer; color: var(--muted); padding: 4px; font-size: 14px; transition: color 0.15s; border-radius: 3px; }
+.icon-btn:hover { color: var(--text); background: var(--surface2); }
+.source-tag { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--muted); opacity: 0.7; margin-top: 2px; }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--muted); }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+
+/* ── MOBILE CONTENT ─────────────────────────────────────────── */
+.mobile-content {
+  padding: 14px 16px;
+  padding-bottom: 90px;
+}
+
+.mobile-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;
+}
+.mobile-stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;
+}
+.mobile-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; line-height: 1; margin-bottom: 2px; }
+.mobile-stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+.mobile-section { margin-bottom: 20px; }
+.mobile-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px;
+}
+.mobile-section-name { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px; }
+.mobile-section-count { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
+
+.mobile-item-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px; margin-bottom: 8px; cursor: pointer; transition: background 0.1s;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.mobile-item-card:active { background: var(--surface2); }
+
+.mic-top { display: flex; align-items: flex-start; gap: 10px; }
+.mic-check {
+  width: 22px; height: 22px; border-radius: 4px; border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; margin-top: 1px; font-size: 13px;
+}
+.mic-check.checked { background: var(--accent); border-color: var(--accent); color: #0d0f0e; }
+.mic-body { flex: 1; min-width: 0; }
+.mic-name { font-weight: 500; font-size: 13px; line-height: 1.3; }
+.mic-name.strikethrough { text-decoration: line-through; opacity: 0.7; }
+.mic-desc { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.3; }
+.mic-badges { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+
+/* ── FAB ────────────────────────────────────────────────────── */
+.fab {
+  position: fixed; bottom: 76px; right: 20px; width: 56px; height: 56px;
+  border-radius: 50%; background: var(--accent); color: #0d0f0e; border: none;
+  font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(200,240,96,0.4); z-index: 110;
+  transition: transform 0.15s; line-height: 1; -webkit-tap-highlight-color: transparent;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ── BOTTOM NAV ─────────────────────────────────────────────── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 64px;
+  background: var(--surface); border-top: 1px solid var(--border);
+  display: flex; align-items: stretch; z-index: 120;
+}
+.bnav-tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; border: none; background: none; color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.5px;
+  text-transform: uppercase; cursor: pointer; position: relative;
+  -webkit-tap-highlight-color: transparent; transition: color 0.15s;
+}
+.bnav-tab.active { color: var(--accent); }
+.bnav-icon { font-size: 20px; line-height: 1; }
+.bnav-badge {
+  position: absolute; top: 8px; left: calc(50% + 4px);
+  background: var(--danger); color: #fff; font-size: 9px; font-weight: 700;
+  min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* ── DRAWERS ────────────────────────────────────────────────── */
+.drawer-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 130;
+}
+.drawer-overlay.open { display: block; }
+
+.drawer {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface); border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0; transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  z-index: 140; max-height: 78vh; overflow-y: auto; padding-bottom: 24px;
+}
+.drawer.open { transform: translateY(0); }
+.drawer-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; }
+.drawer-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--accent); padding: 14px 20px 12px; border-bottom: 1px solid var(--border); }
+.drawer-body { padding: 16px 20px; }
+
+.mobile-bag-card {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 16px; margin-bottom: 10px;
+}
+.mobile-bag-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.mobile-bag-meta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+.mobile-alert-row {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.mobile-alert-row:last-child { border-bottom: none; }
+
+.drawer-view-btn {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 0;
+  background: none; border: none; border-bottom: 1px solid var(--border);
+  color: var(--text); cursor: pointer; font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px; text-align: left; -webkit-tap-highlight-color: transparent;
+}
+.drawer-view-btn:last-child { border-bottom: none; }
+.dv-icon { font-size: 20px; width: 28px; flex-shrink: 0; }
+.dv-count { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
+
+/* ── DESKTOP OVERRIDES (768px+) ─────────────────────────────── */
+@media (min-width: 768px) {
+  header { padding: 0 24px; }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+  .scenario-strip { display: none; }
   .app {
     display: grid;
     grid-template-columns: 260px 1fr;
     min-height: calc(100vh - 56px);
   }
-
-  /* SIDEBAR */
-  .sidebar {
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 20px 0;
-    overflow-y: auto;
-  }
-
-  .sidebar-section {
-    margin-bottom: 24px;
-  }
-
-  .sidebar-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    padding: 0 20px 8px;
-    text-transform: uppercase;
-  }
-
-  .scenario-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 10px 20px;
-    background: none;
-    border: none;
-    color: var(--text);
-    cursor: pointer;
-    text-align: left;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    transition: background 0.15s;
-    border-left: 3px solid transparent;
-  }
-
-  .scenario-btn:hover { background: var(--surface2); }
-  .scenario-btn.active {
-    background: var(--surface2);
-    border-left-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .scenario-icon { font-size: 18px; flex-shrink: 0; }
-
-  .scenario-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .scenario-count {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-  }
-
-  .bag-btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 8px 20px;
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    text-align: left;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 12px;
-    transition: color 0.15s;
-  }
-
-  .bag-btn:hover { color: var(--text); }
-
-  .add-bag-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: calc(100% - 40px);
-    margin: 8px 20px;
-    padding: 8px 12px;
-    background: var(--surface2);
-    border: 1px dashed var(--border);
-    border-radius: 4px;
-    color: var(--muted);
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 1px;
-    transition: all 0.15s;
-  }
-
-  .add-bag-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* MAIN */
-  main {
-    padding: 28px;
-    overflow-y: auto;
-  }
-
-  /* PAGE HEADER */
-  .page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    gap: 20px;
-  }
-
-  .page-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 42px;
-    letter-spacing: 3px;
-    color: var(--text);
-    line-height: 1;
-  }
-
-  .page-subtitle {
-    color: var(--muted);
-    font-size: 12px;
-    margin-top: 4px;
-    font-family: 'IBM Plex Mono', monospace;
-  }
-
-  /* BAG PROFILE CARD */
-  .bag-profile {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 24px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 16px;
-    align-items: center;
-  }
-
-  .bag-profile-info { display: flex; gap: 24px; align-items: center; }
-
-  .bag-volume-gauge {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    min-width: 80px;
-  }
-
-  .gauge-ring {
-    position: relative;
-    width: 72px;
-    height: 72px;
-  }
-
-  .gauge-ring svg { transform: rotate(-90deg); }
-
-  .gauge-ring .track {
-    fill: none;
-    stroke: var(--surface2);
-    stroke-width: 6;
-  }
-
-  .gauge-ring .fill {
-    fill: none;
-    stroke-width: 6;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 0.6s ease;
-  }
-
-  .gauge-center {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-  }
-
-  .gauge-pct { font-size: 15px; font-weight: 600; }
-
-  .bag-details { display: flex; flex-direction: column; gap: 4px; }
-  .bag-name { font-size: 16px; font-weight: 600; }
-  .bag-spec { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
-
-  .btn {
-    padding: 8px 16px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    transition: all 0.15s;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #0d0f0e;
-  }
-  .btn-primary:hover { background: #b8e050; }
-
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
-  .btn-ghost:hover { border-color: var(--text); color: var(--text); }
-
-  .btn-sm { padding: 5px 10px; font-size: 11px; }
-
-  /* STATS ROW */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 14px 16px;
-  }
-
-  .stat-val {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 32px;
-    letter-spacing: 1px;
-    line-height: 1;
-    margin-bottom: 2px;
-  }
-
-  .stat-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  /* FILTER BAR */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .filter-chip {
-    padding: 5px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--muted);
-    cursor: pointer;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    transition: all 0.15s;
-  }
-
-  .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
-  .filter-chip.active { background: var(--accent); color: #0d0f0e; border-color: var(--accent); font-weight: 600; }
-
-  .search-box {
-    margin-left: auto;
-    padding: 6px 12px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    width: 200px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-
-  .search-box:focus { border-color: var(--accent); }
-  .search-box::placeholder { color: var(--muted); }
-
-  /* ITEM TABLE */
-  .item-table {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .table-head {
-    display: grid;
-    grid-template-columns: 28px 1fr 90px 80px 80px 90px 90px 60px;
-    padding: 10px 16px;
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .th {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-  }
-
-  .item-row {
-    display: grid;
-    grid-template-columns: 28px 1fr 90px 80px 80px 90px 90px 60px;
-    padding: 11px 16px;
-    border-bottom: 1px solid var(--border);
-    align-items: center;
-    transition: background 0.1s;
-    cursor: pointer;
-  }
-
-  .item-row:last-child { border-bottom: none; }
-  .item-row:hover { background: var(--surface2); }
-
-  .item-check {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    border: 2px solid var(--border);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-
-  .item-check.checked {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #0d0f0e;
-    font-size: 10px;
-  }
-
-  .item-name { font-weight: 500; font-size: 13px; }
-  .item-desc { color: var(--muted); font-size: 11px; margin-top: 2px; }
-
-  .category-pill {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-  }
-
-  .td { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted); }
-
-  .priority-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 6px;
-  }
-
-  .status-badge {
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    font-weight: 500;
-  }
-
-  .status-ok { background: rgba(78,203,113,0.15); color: var(--good); }
-  .status-warn { background: rgba(255,179,71,0.15); color: var(--warn); }
-  .status-expired { background: rgba(255,68,68,0.15); color: var(--danger); }
-  .status-missing { background: rgba(122,140,130,0.12); color: var(--muted); }
-
-  /* PROGRESS BAR */
-  .progress-bar {
-    height: 4px;
-    background: var(--surface2);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 8px;
-  }
-
-  .progress-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.5s ease;
-  }
-
-  /* CATEGORY COLORS */
-  .cat-water { background: rgba(100,180,255,0.15); color: #64b4ff; }
-  .cat-food { background: rgba(255,179,71,0.15); color: var(--warn); }
-  .cat-shelter { background: rgba(78,203,113,0.15); color: var(--good); }
-  .cat-medical { background: rgba(255,100,100,0.15); color: #ff6464; }
-  .cat-comms { background: rgba(200,240,96,0.15); color: var(--accent); }
-  .cat-tools { background: rgba(180,140,255,0.15); color: #b48cff; }
-  .cat-docs { background: rgba(255,107,53,0.15); color: var(--accent2); }
-  .cat-power { background: rgba(255,220,100,0.15); color: #ffdc64; }
-  .cat-hygiene { background: rgba(150,220,200,0.15); color: #96dcc8; }
-  .cat-nav { background: rgba(200,160,100,0.15); color: #c8a064; }
-
-  /* MODAL */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-
-  .modal-overlay.open { display: flex; }
-
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-    width: 480px;
-    max-width: 95vw;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .modal-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 26px;
-    letter-spacing: 2px;
-    margin-bottom: 20px;
-    color: var(--accent);
-  }
-
-  .form-group { margin-bottom: 16px; }
-
-  .form-label {
-    display: block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-  }
-
-  .form-input, .form-select {
-    width: 100%;
-    padding: 9px 12px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text);
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-
-  .form-input:focus, .form-select:focus { border-color: var(--accent); }
-  .form-select option { background: var(--surface2); }
-
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
-
-  /* SECTION GROUP */
-  .section-group { margin-bottom: 32px; }
-
-  .section-group-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .section-group-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 2px;
-  }
-
-  .section-progress {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    margin-left: auto;
-  }
-
-  /* EXPIRY ALERT */
-  .alert-banner {
-    background: rgba(255,179,71,0.08);
-    border: 1px solid rgba(255,179,71,0.3);
-    border-radius: 6px;
-    padding: 12px 16px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .alert-icon { font-size: 18px; }
-  .alert-text { font-size: 12px; color: var(--warn); }
-  .alert-text strong { display: block; margin-bottom: 2px; font-size: 13px; }
-
-  /* VOLUME TAG */
-  .vol-tag {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
-
-  .icon-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--muted);
-    padding: 4px;
-    font-size: 14px;
-    transition: color 0.15s;
-    border-radius: 3px;
-  }
-  .icon-btn:hover { color: var(--text); background: var(--surface2); }
-
-  /* TOOLTIP */
-  .source-tag {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px;
-    color: var(--muted);
-    opacity: 0.7;
-    margin-top: 2px;
-  }
-
-  /* VOLUME BAR INLINE */
-  .vol-bar {
-    width: 48px;
-    height: 6px;
-    background: var(--surface2);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .vol-bar-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 3px;
-    opacity: 0.7;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--muted);
-  }
-
-  .empty-icon { font-size: 48px; margin-bottom: 12px; }
-  .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
-
-  @media (max-width: 900px) {
-    .app { grid-template-columns: 1fr; }
-    .sidebar { display: none; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-    .table-head, .item-row {
-      grid-template-columns: 28px 1fr 80px 70px 70px;
-    }
-    .th:nth-child(6), .th:nth-child(7), .th:nth-child(8),
-    .td:nth-child(6), .td:nth-child(7) { display: none; }
-  }
+  .mobile-content { display: none; }
+  .fab { display: none; }
+  .bottom-nav { display: none; }
+  .drawer-overlay { display: none !important; }
+  .drawer { display: none !important; }
+  .stats-row { grid-template-columns: repeat(4, 1fr); }
+}
 </style>
 </head>
 <body>
@@ -671,47 +450,57 @@
   </div>
 </header>
 
+<!-- MOBILE SCENARIO STRIP -->
+<div class="scenario-strip">
+  <button class="scenario-pill active" data-scenario="72hr" onclick="setScenario('72hr')">🎒 72-Hour</button>
+  <button class="scenario-pill" data-scenario="ghb" onclick="setScenario('ghb')">🚶 Get-Home</button>
+  <button class="scenario-pill" data-scenario="sip" onclick="setScenario('sip')">🏠 Shelter</button>
+  <button class="scenario-pill" data-scenario="vehicle" onclick="setScenario('vehicle')">🚗 Vehicle</button>
+  <button class="scenario-pill" data-scenario="wildfire" onclick="setScenario('wildfire')">🔥 Wildfire</button>
+  <button class="scenario-pill" data-scenario="earthquake" onclick="setScenario('earthquake')">⚡ CERT</button>
+</div>
+
+<!-- DESKTOP APP GRID -->
 <div class="app">
-  <!-- SIDEBAR -->
   <nav class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Scenarios</div>
-      <button class="scenario-btn active" onclick="setScenario('72hr')">
+      <button class="scenario-btn active" data-scenario="72hr" onclick="setScenario('72hr')">
         <span class="scenario-icon">🎒</span>
         <span class="scenario-meta">
           <span>72-Hour Evacuation</span>
           <span class="scenario-count" id="count-72hr">0 items</span>
         </span>
       </button>
-      <button class="scenario-btn" onclick="setScenario('ghb')">
+      <button class="scenario-btn" data-scenario="ghb" onclick="setScenario('ghb')">
         <span class="scenario-icon">🚶</span>
         <span class="scenario-meta">
           <span>Get-Home Bag</span>
           <span class="scenario-count" id="count-ghb">0 items</span>
         </span>
       </button>
-      <button class="scenario-btn" onclick="setScenario('sip')">
+      <button class="scenario-btn" data-scenario="sip" onclick="setScenario('sip')">
         <span class="scenario-icon">🏠</span>
         <span class="scenario-meta">
           <span>Shelter-in-Place</span>
           <span class="scenario-count" id="count-sip">0 items</span>
         </span>
       </button>
-      <button class="scenario-btn" onclick="setScenario('vehicle')">
+      <button class="scenario-btn" data-scenario="vehicle" onclick="setScenario('vehicle')">
         <span class="scenario-icon">🚗</span>
         <span class="scenario-meta">
           <span>Vehicle Kit</span>
           <span class="scenario-count" id="count-vehicle">0 items</span>
         </span>
       </button>
-      <button class="scenario-btn" onclick="setScenario('wildfire')">
+      <button class="scenario-btn" data-scenario="wildfire" onclick="setScenario('wildfire')">
         <span class="scenario-icon">🔥</span>
         <span class="scenario-meta">
           <span>Wildfire Evac</span>
           <span class="scenario-count" id="count-wildfire">0 items</span>
         </span>
       </button>
-      <button class="scenario-btn" onclick="setScenario('earthquake')">
+      <button class="scenario-btn" data-scenario="earthquake" onclick="setScenario('earthquake')">
         <span class="scenario-icon">⚡</span>
         <span class="scenario-meta">
           <span>Earthquake / CERT</span>
@@ -719,13 +508,11 @@
         </span>
       </button>
     </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">My Bags</div>
       <div id="bag-list"></div>
       <button class="add-bag-btn" onclick="openModal('bag-modal')">＋ REGISTER BAG</button>
     </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">View</div>
       <button class="bag-btn" onclick="setView('all')">All Items</button>
@@ -734,11 +521,78 @@
       <button class="bag-btn" onclick="setView('expired')">Expired</button>
     </div>
   </nav>
+  <main id="main-content"></main>
+</div>
 
-  <!-- MAIN CONTENT -->
-  <main id="main-content">
-    <!-- rendered by JS -->
-  </main>
+<!-- MOBILE CONTENT -->
+<div class="mobile-content" id="mobile-content"></div>
+
+<!-- FAB -->
+<button class="fab" onclick="openModal('item-modal')" title="Add Item">＋</button>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bnav-tab active" id="bnav-items" onclick="setMobileTab('items')">
+    <span class="bnav-icon">📋</span>
+    <span>Items</span>
+  </button>
+  <button class="bnav-tab" id="bnav-bags" onclick="setMobileTab('bags')">
+    <span class="bnav-icon">🎒</span>
+    <span>Bags</span>
+  </button>
+  <button class="bnav-tab" id="bnav-alerts" onclick="setMobileTab('alerts')">
+    <span class="bnav-icon">🔔</span>
+    <span>Alerts</span>
+    <span class="bnav-badge" id="alert-badge" style="display:none">0</span>
+  </button>
+  <button class="bnav-tab" id="bnav-more" onclick="setMobileTab('more')">
+    <span class="bnav-icon">☰</span>
+    <span>More</span>
+  </button>
+</nav>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeAllDrawers()"></div>
+
+<!-- BAGS DRAWER -->
+<div class="drawer" id="bags-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">My Bags</div>
+  <div class="drawer-body" id="bags-drawer-body"></div>
+</div>
+
+<!-- ALERTS DRAWER -->
+<div class="drawer" id="alerts-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">Alerts</div>
+  <div class="drawer-body" id="alerts-drawer-body"></div>
+</div>
+
+<!-- MORE DRAWER -->
+<div class="drawer" id="more-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-title">View</div>
+  <div class="drawer-body">
+    <button class="drawer-view-btn" onclick="setView('all');closeAllDrawers()">
+      <span class="dv-icon">📋</span> All Items
+      <span class="dv-count" id="more-count-all"></span>
+    </button>
+    <button class="drawer-view-btn" onclick="setView('missing');closeAllDrawers()">
+      <span class="dv-icon">⬜</span> Missing / Unchecked
+      <span class="dv-count" id="more-count-missing"></span>
+    </button>
+    <button class="drawer-view-btn" onclick="setView('expiring');closeAllDrawers()">
+      <span class="dv-icon">⏳</span> Expiring Soon
+      <span class="dv-count" id="more-count-expiring"></span>
+    </button>
+    <button class="drawer-view-btn" onclick="setView('expired');closeAllDrawers()">
+      <span class="dv-icon">❌</span> Expired
+      <span class="dv-count" id="more-count-expired"></span>
+    </button>
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+      <button class="btn btn-primary" style="width:100%" onclick="openModal('item-modal');closeAllDrawers()">＋ Add Custom Item</button>
+    </div>
+  </div>
 </div>
 
 <!-- BAG MODAL -->
@@ -755,6 +609,12 @@
         <input class="form-input" id="bag-liters" type="number" placeholder="e.g. 40">
       </div>
       <div class="form-group">
+        <label class="form-label">Expanded Volume (optional)</label>
+        <input class="form-input" id="bag-liters-expanded" type="number" placeholder="e.g. 53">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
         <label class="form-label">Assigned Scenario</label>
         <select class="form-select" id="bag-scenario">
           <option value="72hr">72-Hour Evacuation</option>
@@ -765,10 +625,10 @@
           <option value="earthquake">Earthquake / CERT</option>
         </select>
       </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Dimensions (optional — W × H × D in cm or inches)</label>
-      <input class="form-input" id="bag-dims" placeholder="e.g. 30cm × 50cm × 20cm">
+      <div class="form-group">
+        <label class="form-label">Dimensions (optional)</label>
+        <input class="form-input" id="bag-dims" placeholder='e.g. 25.5"H × 16.5"W × 7.75"D'>
+      </div>
     </div>
     <div class="form-group">
       <label class="form-label">Notes</label>
@@ -825,7 +685,7 @@
         <input class="form-input" id="item-volume" type="number" step="0.1" placeholder="e.g. 0.5">
       </div>
       <div class="form-group">
-        <label class="form-label">Est. Weight (oz or g)</label>
+        <label class="form-label">Est. Weight</label>
         <input class="form-input" id="item-weight" placeholder="e.g. 4 oz">
       </div>
     </div>
@@ -865,111 +725,92 @@
 </div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────────────────────────
+// ── STATE ─────────────────────────────────────────────────────
 let currentScenario = '72hr';
 let currentFilter = 'all';
 let currentView = 'all';
 let searchQuery = '';
-let editingItemId = null;
 
 const SCENARIO_LABELS = {
-  '72hr': '72-Hour Evacuation',
-  'ghb': 'Get-Home Bag',
-  'sip': 'Shelter-in-Place',
-  'vehicle': 'Vehicle Kit',
-  'wildfire': 'Wildfire Evac',
-  'earthquake': 'Earthquake / CERT'
+  '72hr': '72-Hour Evacuation', 'ghb': 'Get-Home Bag', 'sip': 'Shelter-in-Place',
+  'vehicle': 'Vehicle Kit', 'wildfire': 'Wildfire Evac', 'earthquake': 'Earthquake / CERT'
 };
-
 const SCENARIO_ICONS = {
-  '72hr': '🎒', 'ghb': '🚶', 'sip': '🏠',
-  'vehicle': '🚗', 'wildfire': '🔥', 'earthquake': '⚡'
+  '72hr': '🎒', 'ghb': '🚶', 'sip': '🏠', 'vehicle': '🚗', 'wildfire': '🔥', 'earthquake': '⚡'
 };
-
 const CAT_LABELS = {
-  water: '💧 Water', food: '🍫 Food', shelter: '⛺ Shelter',
-  medical: '🩺 Medical', comms: '📡 Comms', tools: '🔧 Tools',
-  docs: '📄 Docs', power: '🔋 Power', hygiene: '🧼 Hygiene', nav: '🧭 Nav'
+  water: '💧 Water', food: '🍫 Food', shelter: '⛺ Shelter', medical: '🩺 Medical',
+  comms: '📡 Comms', tools: '🔧 Tools', docs: '📄 Docs', power: '🔋 Power',
+  hygiene: '🧼 Hygiene', nav: '🧭 Nav'
 };
-
 const PRIORITY_COLORS = {
   critical: '#ff4444', high: '#ff6b35', medium: '#ffb347', low: '#4ecb71'
 };
 
-// ─── SEED DATA (FEMA / Red Cross / CERT based) ───────────────────────────────
+// ── SEED DATA ─────────────────────────────────────────────────
 let items = [
-  // 72HR WATER
-  { id: 1, name: 'Water — 1 gal/person/day (3 days)', desc: '3 gallons per person minimum', category: 'water', priority: 'critical', scenario: '72hr', volume: 11.4, weight: '25 lb', expiry: nextDate(365), source: 'FEMA', checked: false },
-  { id: 2, name: 'Water purification tablets', desc: 'Potable Aqua or iodine tabs, 50-ct', category: 'water', priority: 'critical', scenario: '72hr', volume: 0.1, weight: '1 oz', expiry: nextDate(1460), source: 'RedCross', checked: false },
-  { id: 3, name: 'Collapsible water containers (2x)', desc: '2.5 gal Reliance Aqua-Tainer or similar', category: 'water', priority: 'high', scenario: '72hr', volume: 0.5, weight: '6 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 4, name: 'Portable water filter', desc: 'LifeStraw or Sawyer Squeeze', category: 'water', priority: 'high', scenario: '72hr', volume: 0.3, weight: '2 oz', expiry: null, source: 'CERT', checked: false },
-  // 72HR FOOD
-  { id: 5, name: 'Non-perishable food (3-day supply)', desc: 'MREs, freeze-dried, bars — 2000 cal/day', category: 'food', priority: 'critical', scenario: '72hr', volume: 4.0, weight: '6 lb', expiry: nextDate(1095), source: 'FEMA', checked: false },
-  { id: 6, name: 'Manual can opener', desc: 'P-38 or quality camp opener', category: 'food', priority: 'high', scenario: '72hr', volume: 0.05, weight: '1 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 7, name: 'Camp stove + fuel canister', desc: 'MSR PocketRocket or Jetboil, 100g canister', category: 'food', priority: 'medium', scenario: '72hr', volume: 0.8, weight: '8 oz', expiry: null, source: 'CERT', checked: false },
-  // 72HR SHELTER
-  { id: 8, name: 'Emergency mylar blankets (2)', desc: 'Space Emergency Blankets — 2 per person', category: 'shelter', priority: 'critical', scenario: '72hr', volume: 0.1, weight: '2 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 9, name: 'Tent or tarp (lightweight)', desc: 'Two-person tent or 8×10 silnylon tarp', category: 'shelter', priority: 'high', scenario: '72hr', volume: 3.5, weight: '2 lb', expiry: null, source: 'RedCross', checked: false },
-  { id: 10, name: 'Sleeping bag (appropriate rating)', desc: 'Rated to lowest expected temp', category: 'shelter', priority: 'high', scenario: '72hr', volume: 5.0, weight: '3 lb', expiry: null, source: 'RedCross', checked: false },
-  { id: 11, name: 'Extra clothing (3 days)', desc: 'Moisture-wicking, warm layers, rain gear', category: 'shelter', priority: 'high', scenario: '72hr', volume: 4.0, weight: '4 lb', expiry: null, source: 'FEMA', checked: false },
-  { id: 12, name: 'Work gloves (heavy duty)', desc: 'Leather or cut-resistant', category: 'shelter', priority: 'medium', scenario: '72hr', volume: 0.3, weight: '8 oz', expiry: null, source: 'CERT', checked: false },
-  // 72HR MEDICAL
-  { id: 13, name: 'First aid kit (comprehensive)', desc: 'IFAK or Red Cross 163-pc kit minimum', category: 'medical', priority: 'critical', scenario: '72hr', volume: 1.5, weight: '2 lb', expiry: nextDate(730), source: 'RedCross', checked: false },
-  { id: 14, name: 'Prescription medications (7-day+)', desc: 'All personal meds in waterproof container', category: 'medical', priority: 'critical', scenario: '72hr', volume: 0.3, weight: '4 oz', expiry: nextDate(180), source: 'FEMA', checked: false },
-  { id: 15, name: 'Tourniquet (CAT or SOFTT-W)', desc: 'TCCC-approved, pre-staged', category: 'medical', priority: 'critical', scenario: '72hr', volume: 0.2, weight: '3 oz', expiry: null, source: 'Wilderness', checked: false },
-  { id: 16, name: 'Hemostatic gauze (QuikClot/Celox)', desc: '2 packages', category: 'medical', priority: 'high', scenario: '72hr', volume: 0.2, weight: '2 oz', expiry: nextDate(1095), source: 'Wilderness', checked: false },
-  // 72HR COMMS
-  { id: 17, name: 'NOAA Weather Radio (battery/hand-crank)', desc: 'Midland ER310 or similar', category: 'comms', priority: 'critical', scenario: '72hr', volume: 0.5, weight: '10 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 18, name: 'Cell phone + portable charger', desc: 'Phone in waterproof case, 10,000+ mAh bank', category: 'comms', priority: 'critical', scenario: '72hr', volume: 0.5, weight: '14 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 19, name: 'FRS/GMRS radios (pair)', desc: 'Midland GXT1000 or similar, 2-packs', category: 'comms', priority: 'medium', scenario: '72hr', volume: 0.8, weight: '1 lb', expiry: null, source: 'CERT', checked: false },
-  { id: 20, name: 'Signal mirror + whistle', desc: 'UST Survival whistle + glass signal mirror', category: 'comms', priority: 'high', scenario: '72hr', volume: 0.05, weight: '1 oz', expiry: null, source: 'Wilderness', checked: false },
-  // 72HR TOOLS
-  { id: 21, name: 'Flashlight + extra batteries', desc: '300+ lumen LED, 2 sets spare batteries', category: 'tools', priority: 'critical', scenario: '72hr', volume: 0.4, weight: '6 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 22, name: 'Multi-tool (Leatherman/Gerber)', desc: 'Pliers, knife, saw, screwdrivers', category: 'tools', priority: 'critical', scenario: '72hr', volume: 0.3, weight: '7 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 23, name: 'Fixed-blade knife', desc: '4–6" blade, full tang', category: 'tools', priority: 'high', scenario: '72hr', volume: 0.2, weight: '5 oz', expiry: null, source: 'Wilderness', checked: false },
-  { id: 24, name: 'Duct tape (mini roll)', desc: 'Gorilla Tape travel roll', category: 'tools', priority: 'medium', scenario: '72hr', volume: 0.2, weight: '4 oz', expiry: null, source: 'CERT', checked: false },
-  { id: 25, name: 'Paracord 550 (50 ft)', desc: 'Type III paracord, multiple uses', category: 'tools', priority: 'medium', scenario: '72hr', volume: 0.4, weight: '4 oz', expiry: null, source: 'CERT', checked: false },
-  { id: 26, name: 'Fire starting kit', desc: 'Bic lighter × 3, waterproof matches, ferro rod', category: 'tools', priority: 'critical', scenario: '72hr', volume: 0.2, weight: '3 oz', expiry: null, source: 'Wilderness', checked: false },
-  { id: 27, name: 'Headlamp + spare batteries', desc: '200+ lumen, hands-free', category: 'tools', priority: 'high', scenario: '72hr', volume: 0.3, weight: '3 oz', expiry: null, source: 'FEMA', checked: false },
-  // 72HR DOCS
-  { id: 28, name: 'Emergency document copies', desc: 'IDs, insurance, birth certs, passports — waterproof bag', category: 'docs', priority: 'critical', scenario: '72hr', volume: 0.2, weight: '4 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 29, name: 'Emergency cash (small bills)', desc: '$200+ minimum in mixed denominations', category: 'docs', priority: 'high', scenario: '72hr', volume: 0.05, weight: '1 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 30, name: 'Local maps (paper)', desc: 'City + county road maps, waterproofed', category: 'docs', priority: 'high', scenario: '72hr', volume: 0.2, weight: '4 oz', expiry: null, source: 'FEMA', checked: false },
-  // 72HR POWER
-  { id: 31, name: 'Portable battery bank (20,000+ mAh)', desc: 'Anker 20000 or equivalent — USB-A/C', category: 'power', priority: 'high', scenario: '72hr', volume: 0.6, weight: '14 oz', expiry: null, source: 'Custom', checked: false },
-  { id: 32, name: 'Solar charging panel (foldable)', desc: 'GoalZero Nomad 10 or similar', category: 'power', priority: 'medium', scenario: '72hr', volume: 0.8, weight: '8 oz', expiry: null, source: 'Custom', checked: false },
-  // 72HR HYGIENE
-  { id: 33, name: 'Sanitation supplies kit', desc: 'Toilet paper, waste bags, hand sanitizer, soap', category: 'hygiene', priority: 'critical', scenario: '72hr', volume: 1.0, weight: '1 lb', expiry: nextDate(365), source: 'FEMA', checked: false },
-  { id: 34, name: 'N95 masks (5+)', desc: 'NIOSH-approved respirators', category: 'hygiene', priority: 'high', scenario: '72hr', volume: 0.3, weight: '4 oz', expiry: nextDate(1825), source: 'CDC', checked: false },
-  // 72HR NAV
-  { id: 35, name: 'Compass (baseplate)', desc: 'Suunto A-10 or Silva Ranger', category: 'nav', priority: 'high', scenario: '72hr', volume: 0.1, weight: '1 oz', expiry: null, source: 'Wilderness', checked: false },
-  { id: 36, name: 'GPS device (handheld)', desc: 'Garmin eTrex or inReach Mini', category: 'nav', priority: 'medium', scenario: '72hr', volume: 0.3, weight: '5 oz', expiry: null, source: 'Custom', checked: false },
-
-  // GET-HOME BAG
-  { id: 37, name: 'Water (1L minimum)', desc: 'Nalgene or collapsible bottle', category: 'water', priority: 'critical', scenario: 'ghb', volume: 1.1, weight: '2.2 lb', expiry: null, source: 'FEMA', checked: false },
-  { id: 38, name: 'High-calorie energy bars (2000 cal)', desc: 'Clif, Kind, or Datrex', category: 'food', priority: 'critical', scenario: 'ghb', volume: 0.5, weight: '12 oz', expiry: nextDate(365), source: 'FEMA', checked: false },
-  { id: 39, name: 'Comfortable walking shoes + socks', desc: 'Extra pair in bag at all times', category: 'shelter', priority: 'critical', scenario: 'ghb', volume: 2.0, weight: '2 lb', expiry: null, source: 'CERT', checked: false },
-  { id: 40, name: 'Small first aid kit', desc: 'Boo-boo kit + blister care', category: 'medical', priority: 'high', scenario: 'ghb', volume: 0.5, weight: '8 oz', expiry: nextDate(730), source: 'RedCross', checked: false },
-  { id: 41, name: 'Phone charger + small battery bank', desc: '5,000 mAh minimum', category: 'power', priority: 'high', scenario: 'ghb', volume: 0.3, weight: '6 oz', expiry: null, source: 'Custom', checked: false },
-  { id: 42, name: 'Multi-tool or pocket knife', desc: 'Leatherman Squirt or Victorinox SAK', category: 'tools', priority: 'high', scenario: 'ghb', volume: 0.15, weight: '3 oz', expiry: null, source: 'CERT', checked: false },
-  { id: 43, name: 'Flashlight or headlamp', desc: '100+ lumen, spare batteries', category: 'tools', priority: 'high', scenario: 'ghb', volume: 0.3, weight: '3 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 44, name: 'Local paper map + compass', desc: 'Pre-plotted routes home from common locations', category: 'nav', priority: 'critical', scenario: 'ghb', volume: 0.1, weight: '2 oz', expiry: null, source: 'CERT', checked: false },
-  { id: 45, name: 'Rain poncho + emergency blanket', desc: 'Lightweight shelter from elements', category: 'shelter', priority: 'high', scenario: 'ghb', volume: 0.4, weight: '6 oz', expiry: null, source: 'FEMA', checked: false },
-  { id: 46, name: 'Emergency cash + ID copies', desc: '$50–100, laminated ID copy', category: 'docs', priority: 'high', scenario: 'ghb', volume: 0.05, weight: '1 oz', expiry: null, source: 'FEMA', checked: false },
-
-  // VEHICLE
-  { id: 47, name: 'Jumper cables or jump starter pack', desc: 'NOCO Boost or 10ft heavy gauge cables', category: 'tools', priority: 'critical', scenario: 'vehicle', volume: 2.0, weight: '3 lb', expiry: null, source: 'FEMA', checked: false },
-  { id: 48, name: 'First aid kit (vehicle)', desc: 'AAA or equivalent 100-pc kit', category: 'medical', priority: 'critical', scenario: 'vehicle', volume: 1.5, weight: '2 lb', expiry: nextDate(730), source: 'RedCross', checked: false },
-  { id: 49, name: 'Reflective triangles / flares', desc: '3-piece kit, DOT compliant', category: 'comms', priority: 'critical', scenario: 'vehicle', volume: 1.0, weight: '2 lb', expiry: null, source: 'FEMA', checked: false },
-  { id: 50, name: 'Tire inflation kit or spare', desc: 'Fix-a-Flat + compressor or full spare', category: 'tools', priority: 'critical', scenario: 'vehicle', volume: 2.0, weight: '5 lb', expiry: null, source: 'FEMA', checked: false },
-  { id: 51, name: 'Water (3 gallons in trunk)', desc: 'Stored in sealed containers', category: 'water', priority: 'high', scenario: 'vehicle', volume: 11.4, weight: '25 lb', expiry: nextDate(365), source: 'FEMA', checked: false },
-  { id: 52, name: 'Blankets (2)', desc: 'Wool or synthetic, compact', category: 'shelter', priority: 'high', scenario: 'vehicle', volume: 4.0, weight: '4 lb', expiry: null, source: 'FEMA', checked: false },
-  { id: 53, name: 'Multi-tool + work gloves', desc: 'For roadside emergency repairs', category: 'tools', priority: 'high', scenario: 'vehicle', volume: 0.5, weight: '12 oz', expiry: null, source: 'CERT', checked: false },
-  { id: 54, name: 'Emergency food bars (2-day)', desc: 'Datrex or Mayday bars', category: 'food', priority: 'high', scenario: 'vehicle', volume: 0.5, weight: '12 oz', expiry: nextDate(1825), source: 'FEMA', checked: false },
+  { id:1,  name:'Water — 1 gal/person/day (3 days)',        desc:'3 gallons per person minimum',                                category:'water',   priority:'critical', scenario:'72hr',       volume:11.4, weight:'25 lb',  expiry:nextDate(365),  source:'FEMA',      checked:false },
+  { id:2,  name:'Water purification tablets',               desc:'Potable Aqua or iodine tabs, 50-ct',                         category:'water',   priority:'critical', scenario:'72hr',       volume:0.1,  weight:'1 oz',   expiry:nextDate(1460), source:'RedCross',  checked:false },
+  { id:3,  name:'Collapsible water containers (2x)',         desc:'2.5 gal Reliance Aqua-Tainer or similar',                   category:'water',   priority:'high',     scenario:'72hr',       volume:0.5,  weight:'6 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:4,  name:'Portable water filter',                    desc:'LifeStraw or Sawyer Squeeze',                                category:'water',   priority:'high',     scenario:'72hr',       volume:0.3,  weight:'2 oz',   expiry:null,           source:'CERT',      checked:false },
+  { id:5,  name:'Non-perishable food (3-day supply)',        desc:'MREs, freeze-dried, bars — 2000 cal/day',                   category:'food',    priority:'critical', scenario:'72hr',       volume:4.0,  weight:'6 lb',   expiry:nextDate(1095), source:'FEMA',      checked:false },
+  { id:6,  name:'Manual can opener',                        desc:'P-38 or quality camp opener',                                category:'food',    priority:'high',     scenario:'72hr',       volume:0.05, weight:'1 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:7,  name:'Camp stove + fuel canister',               desc:'MSR PocketRocket or Jetboil, 100g canister',                category:'food',    priority:'medium',   scenario:'72hr',       volume:0.8,  weight:'8 oz',   expiry:null,           source:'CERT',      checked:false },
+  { id:8,  name:'Emergency mylar blankets (2)',             desc:'Space Emergency Blankets — 2 per person',                   category:'shelter', priority:'critical', scenario:'72hr',       volume:0.1,  weight:'2 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:9,  name:'Tent or tarp (lightweight)',               desc:'Two-person tent or 8×10 silnylon tarp',                     category:'shelter', priority:'high',     scenario:'72hr',       volume:3.5,  weight:'2 lb',   expiry:null,           source:'RedCross',  checked:false },
+  { id:10, name:'Sleeping bag (appropriate rating)',         desc:'Rated to lowest expected temp',                             category:'shelter', priority:'high',     scenario:'72hr',       volume:5.0,  weight:'3 lb',   expiry:null,           source:'RedCross',  checked:false },
+  { id:11, name:'Extra clothing (3 days)',                  desc:'Moisture-wicking, warm layers, rain gear',                  category:'shelter', priority:'high',     scenario:'72hr',       volume:4.0,  weight:'4 lb',   expiry:null,           source:'FEMA',      checked:false },
+  { id:12, name:'Work gloves (heavy duty)',                 desc:'Leather or cut-resistant',                                  category:'shelter', priority:'medium',   scenario:'72hr',       volume:0.3,  weight:'8 oz',   expiry:null,           source:'CERT',      checked:false },
+  { id:13, name:'First aid kit (comprehensive)',            desc:'IFAK or Red Cross 163-pc kit minimum',                      category:'medical', priority:'critical', scenario:'72hr',       volume:1.5,  weight:'2 lb',   expiry:nextDate(730),  source:'RedCross',  checked:false },
+  { id:14, name:'Prescription medications (7-day+)',        desc:'All personal meds in waterproof container',                 category:'medical', priority:'critical', scenario:'72hr',       volume:0.3,  weight:'4 oz',   expiry:nextDate(180),  source:'FEMA',      checked:false },
+  { id:15, name:'Tourniquet (CAT or SOFTT-W)',              desc:'TCCC-approved, pre-staged',                                 category:'medical', priority:'critical', scenario:'72hr',       volume:0.2,  weight:'3 oz',   expiry:null,           source:'Wilderness',checked:false },
+  { id:16, name:'Hemostatic gauze (QuikClot/Celox)',        desc:'2 packages',                                                category:'medical', priority:'high',     scenario:'72hr',       volume:0.2,  weight:'2 oz',   expiry:nextDate(1095), source:'Wilderness',checked:false },
+  { id:17, name:'NOAA Weather Radio (battery/hand-crank)',  desc:'Midland ER310 or similar',                                  category:'comms',   priority:'critical', scenario:'72hr',       volume:0.5,  weight:'10 oz',  expiry:null,           source:'FEMA',      checked:false },
+  { id:18, name:'Cell phone + portable charger',            desc:'Phone in waterproof case, 10,000+ mAh bank',                category:'comms',   priority:'critical', scenario:'72hr',       volume:0.5,  weight:'14 oz',  expiry:null,           source:'FEMA',      checked:false },
+  { id:19, name:'FRS/GMRS radios (pair)',                   desc:'Midland GXT1000 or similar, 2-packs',                       category:'comms',   priority:'medium',   scenario:'72hr',       volume:0.8,  weight:'1 lb',   expiry:null,           source:'CERT',      checked:false },
+  { id:20, name:'Signal mirror + whistle',                  desc:'UST Survival whistle + glass signal mirror',                category:'comms',   priority:'high',     scenario:'72hr',       volume:0.05, weight:'1 oz',   expiry:null,           source:'Wilderness',checked:false },
+  { id:21, name:'Flashlight + extra batteries',             desc:'300+ lumen LED, 2 sets spare batteries',                   category:'tools',   priority:'critical', scenario:'72hr',       volume:0.4,  weight:'6 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:22, name:'Multi-tool (Leatherman/Gerber)',           desc:'Pliers, knife, saw, screwdrivers',                          category:'tools',   priority:'critical', scenario:'72hr',       volume:0.3,  weight:'7 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:23, name:'Fixed-blade knife',                        desc:'4–6" blade, full tang',                                    category:'tools',   priority:'high',     scenario:'72hr',       volume:0.2,  weight:'5 oz',   expiry:null,           source:'Wilderness',checked:false },
+  { id:24, name:'Duct tape (mini roll)',                    desc:'Gorilla Tape travel roll',                                  category:'tools',   priority:'medium',   scenario:'72hr',       volume:0.2,  weight:'4 oz',   expiry:null,           source:'CERT',      checked:false },
+  { id:25, name:'Paracord 550 (50 ft)',                     desc:'Type III paracord, multiple uses',                          category:'tools',   priority:'medium',   scenario:'72hr',       volume:0.4,  weight:'4 oz',   expiry:null,           source:'CERT',      checked:false },
+  { id:26, name:'Fire starting kit',                        desc:'Bic lighter × 3, waterproof matches, ferro rod',           category:'tools',   priority:'critical', scenario:'72hr',       volume:0.2,  weight:'3 oz',   expiry:null,           source:'Wilderness',checked:false },
+  { id:27, name:'Headlamp + spare batteries',               desc:'200+ lumen, hands-free',                                   category:'tools',   priority:'high',     scenario:'72hr',       volume:0.3,  weight:'3 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:28, name:'Emergency document copies',                desc:'IDs, insurance, birth certs, passports — waterproof bag',  category:'docs',    priority:'critical', scenario:'72hr',       volume:0.2,  weight:'4 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:29, name:'Emergency cash (small bills)',             desc:'$200+ minimum in mixed denominations',                      category:'docs',    priority:'high',     scenario:'72hr',       volume:0.05, weight:'1 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:30, name:'Local maps (paper)',                       desc:'City + county road maps, waterproofed',                    category:'docs',    priority:'high',     scenario:'72hr',       volume:0.2,  weight:'4 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:31, name:'Portable battery bank (20,000+ mAh)',      desc:'Anker 20000 or equivalent — USB-A/C',                       category:'power',   priority:'high',     scenario:'72hr',       volume:0.6,  weight:'14 oz',  expiry:null,           source:'Custom',    checked:false },
+  { id:32, name:'Solar charging panel (foldable)',          desc:'GoalZero Nomad 10 or similar',                              category:'power',   priority:'medium',   scenario:'72hr',       volume:0.8,  weight:'8 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:33, name:'Sanitation supplies kit',                  desc:'Toilet paper, waste bags, hand sanitizer, soap',           category:'hygiene', priority:'critical', scenario:'72hr',       volume:1.0,  weight:'1 lb',   expiry:nextDate(365),  source:'FEMA',      checked:false },
+  { id:34, name:'N95 masks (5+)',                           desc:'NIOSH-approved respirators',                                category:'hygiene', priority:'high',     scenario:'72hr',       volume:0.3,  weight:'4 oz',   expiry:nextDate(1825), source:'CDC',       checked:false },
+  { id:35, name:'Compass (baseplate)',                      desc:'Suunto A-10 or Silva Ranger',                               category:'nav',     priority:'high',     scenario:'72hr',       volume:0.1,  weight:'1 oz',   expiry:null,           source:'Wilderness',checked:false },
+  { id:36, name:'GPS device (handheld)',                    desc:'Garmin eTrex or inReach Mini',                              category:'nav',     priority:'medium',   scenario:'72hr',       volume:0.3,  weight:'5 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:37, name:'Water (1L minimum)',                       desc:'Nalgene or collapsible bottle',                             category:'water',   priority:'critical', scenario:'ghb',        volume:1.1,  weight:'2.2 lb', expiry:null,           source:'FEMA',      checked:false },
+  { id:38, name:'High-calorie energy bars (2000 cal)',      desc:'Clif, Kind, or Datrex',                                    category:'food',    priority:'critical', scenario:'ghb',        volume:0.5,  weight:'12 oz',  expiry:nextDate(365),  source:'FEMA',      checked:false },
+  { id:39, name:'Comfortable walking shoes + socks',        desc:'Extra pair in bag at all times',                           category:'shelter', priority:'critical', scenario:'ghb',        volume:2.0,  weight:'2 lb',   expiry:null,           source:'CERT',      checked:false },
+  { id:40, name:'Small first aid kit',                      desc:'Boo-boo kit + blister care',                               category:'medical', priority:'high',     scenario:'ghb',        volume:0.5,  weight:'8 oz',   expiry:nextDate(730),  source:'RedCross',  checked:false },
+  { id:41, name:'Phone charger + small battery bank',       desc:'5,000 mAh minimum',                                        category:'power',   priority:'high',     scenario:'ghb',        volume:0.3,  weight:'6 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:42, name:'Multi-tool or pocket knife',               desc:'Leatherman Squirt or Victorinox SAK',                      category:'tools',   priority:'high',     scenario:'ghb',        volume:0.15, weight:'3 oz',   expiry:null,           source:'CERT',      checked:false },
+  { id:43, name:'Flashlight or headlamp',                   desc:'100+ lumen, spare batteries',                              category:'tools',   priority:'high',     scenario:'ghb',        volume:0.3,  weight:'3 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:44, name:'Local paper map + compass',                desc:'Pre-plotted routes home from common locations',             category:'nav',     priority:'critical', scenario:'ghb',        volume:0.1,  weight:'2 oz',   expiry:null,           source:'CERT',      checked:false },
+  { id:45, name:'Rain poncho + emergency blanket',          desc:'Lightweight shelter from elements',                        category:'shelter', priority:'high',     scenario:'ghb',        volume:0.4,  weight:'6 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:46, name:'Emergency cash + ID copies',               desc:'$50–100, laminated ID copy',                               category:'docs',    priority:'high',     scenario:'ghb',        volume:0.05, weight:'1 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:47, name:'Jumper cables or jump starter pack',       desc:'NOCO Boost or 10ft heavy gauge cables',                   category:'tools',   priority:'critical', scenario:'vehicle',    volume:2.0,  weight:'3 lb',   expiry:null,           source:'FEMA',      checked:false },
+  { id:48, name:'First aid kit (vehicle)',                  desc:'AAA or equivalent 100-pc kit',                             category:'medical', priority:'critical', scenario:'vehicle',    volume:1.5,  weight:'2 lb',   expiry:nextDate(730),  source:'RedCross',  checked:false },
+  { id:49, name:'Reflective triangles / flares',            desc:'3-piece kit, DOT compliant',                               category:'comms',   priority:'critical', scenario:'vehicle',    volume:1.0,  weight:'2 lb',   expiry:null,           source:'FEMA',      checked:false },
+  { id:50, name:'Tire inflation kit or spare',              desc:'Fix-a-Flat + compressor or full spare',                    category:'tools',   priority:'critical', scenario:'vehicle',    volume:2.0,  weight:'5 lb',   expiry:null,           source:'FEMA',      checked:false },
+  { id:51, name:'Water (3 gallons in trunk)',               desc:'Stored in sealed containers',                              category:'water',   priority:'high',     scenario:'vehicle',    volume:11.4, weight:'25 lb',  expiry:nextDate(365),  source:'FEMA',      checked:false },
+  { id:52, name:'Blankets (2)',                             desc:'Wool or synthetic, compact',                               category:'shelter', priority:'high',     scenario:'vehicle',    volume:4.0,  weight:'4 lb',   expiry:null,           source:'FEMA',      checked:false },
+  { id:53, name:'Multi-tool + work gloves',                 desc:'For roadside emergency repairs',                           category:'tools',   priority:'high',     scenario:'vehicle',    volume:0.5,  weight:'12 oz',  expiry:null,           source:'CERT',      checked:false },
+  { id:54, name:'Emergency food bars (2-day)',              desc:'Datrex or Mayday bars',                                    category:'food',    priority:'high',     scenario:'vehicle',    volume:0.5,  weight:'12 oz',  expiry:nextDate(1825), source:'FEMA',      checked:false },
 ];
 
-let bags = [];
-let nextId = items.length + 1;
+let bags = [
+  { id:1001, name:'Eberlestock UpRanger',   liters:53.4, litersExpanded:null, scenario:'72hr',    dims:'25.5"H × 16.5"W × 7.75"D', notes:'Polycarbonate base, rear-access harness, MOLLE sides' },
+  { id:1002, name:'Eberlestock Fade Adapt', liters:28,   litersExpanded:40.7, scenario:'ghb',     dims:'21.75"H × 12.25"W × 7.5"D', notes:'Hidden scabbard — 28L collapsed / 40.7L expanded' },
+];
+
+let nextId = 55;
 
 function nextDate(days) {
   const d = new Date();
@@ -977,11 +818,30 @@ function nextDate(days) {
   return d.toISOString().split('T')[0];
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// ── LOCALSTORAGE ──────────────────────────────────────────────
+function saveToStorage() {
+  try {
+    localStorage.setItem('ready_items', JSON.stringify(items));
+    localStorage.setItem('ready_bags', JSON.stringify(bags));
+    localStorage.setItem('ready_nextId', String(nextId));
+  } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    const si = localStorage.getItem('ready_items');
+    const sb = localStorage.getItem('ready_bags');
+    const sn = localStorage.getItem('ready_nextId');
+    if (si !== null) items = JSON.parse(si);
+    if (sb !== null) bags = JSON.parse(sb);
+    if (sn !== null) nextId = parseInt(sn);
+  } catch(e) {}
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
 function daysUntilExpiry(dateStr) {
   if (!dateStr) return null;
-  const diff = new Date(dateStr) - new Date();
-  return Math.ceil(diff / 86400000);
+  return Math.ceil((new Date(dateStr) - new Date()) / 86400000);
 }
 
 function expiryStatus(dateStr) {
@@ -996,8 +856,8 @@ function scenarioItems(scenario) {
   return items.filter(i => i.scenario === scenario);
 }
 
-function totalVolume(itemList) {
-  return itemList.reduce((s, i) => s + (parseFloat(i.volume) || 0), 0);
+function totalVolume(list) {
+  return list.reduce((s, i) => s + (parseFloat(i.volume) || 0), 0);
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
@@ -1007,12 +867,13 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
 
-// ─── SCENARIO / VIEW ─────────────────────────────────────────────────────────
+// ── SCENARIO / VIEW ───────────────────────────────────────────
 function setScenario(s) {
   currentScenario = s;
   currentFilter = 'all';
-  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  document.querySelectorAll('[data-scenario]').forEach(el => {
+    el.classList.toggle('active', el.dataset.scenario === s);
+  });
   render();
 }
 
@@ -1027,19 +888,45 @@ function setFilter(f) {
   render();
 }
 
-// ─── SAVE ────────────────────────────────────────────────────────────────────
+// ── MOBILE NAV / DRAWERS ──────────────────────────────────────
+function setMobileTab(tab) {
+  if (tab === 'items') {
+    closeAllDrawers();
+    return;
+  }
+  document.querySelectorAll('.bnav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('bnav-' + tab).classList.add('active');
+  openDrawer(tab + '-drawer');
+}
+
+function openDrawer(id) {
+  closeAllDrawers(true);
+  document.getElementById(id).classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+
+function closeAllDrawers(skipTabReset) {
+  document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
+  document.getElementById('drawer-overlay').classList.remove('open');
+  if (!skipTabReset) {
+    document.querySelectorAll('.bnav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('bnav-items').classList.add('active');
+  }
+}
+
+// ── SAVE ──────────────────────────────────────────────────────
 function saveBag() {
   const name = document.getElementById('bag-name').value.trim();
   const liters = parseFloat(document.getElementById('bag-liters').value) || 0;
+  const litersExpanded = parseFloat(document.getElementById('bag-liters-expanded').value) || null;
   const scenario = document.getElementById('bag-scenario').value;
   const dims = document.getElementById('bag-dims').value.trim();
   const notes = document.getElementById('bag-notes').value.trim();
   if (!name) { alert('Enter a bag name.'); return; }
-  bags.push({ id: Date.now(), name, liters, scenario, dims, notes });
-  document.getElementById('bag-name').value = '';
-  document.getElementById('bag-liters').value = '';
-  document.getElementById('bag-dims').value = '';
-  document.getElementById('bag-notes').value = '';
+  bags.push({ id: Date.now(), name, liters, litersExpanded, scenario, dims, notes });
+  ['bag-name','bag-liters','bag-liters-expanded','bag-dims','bag-notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
   closeModal('bag-modal');
   render();
 }
@@ -1047,7 +934,7 @@ function saveBag() {
 function saveItem() {
   const name = document.getElementById('item-name').value.trim();
   if (!name) { alert('Enter item name.'); return; }
-  const item = {
+  items.push({
     id: nextId++,
     name,
     desc: document.getElementById('item-desc').value.trim(),
@@ -1059,8 +946,7 @@ function saveItem() {
     expiry: document.getElementById('item-expiry').value || null,
     source: document.getElementById('item-source').value,
     checked: false,
-  };
-  items.push(item);
+  });
   document.getElementById('item-name').value = '';
   document.getElementById('item-desc').value = '';
   closeModal('item-modal');
@@ -1069,28 +955,34 @@ function saveItem() {
 
 function toggleCheck(id) {
   const item = items.find(i => i.id === id);
-  if (item) item.checked = !item.checked;
-  render();
+  if (item) { item.checked = !item.checked; render(); }
 }
 
 function deleteItem(id) {
+  if (!confirm('Remove this item?')) return;
   items = items.filter(i => i.id !== id);
   render();
 }
 
-// ─── RENDER ──────────────────────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────
 function render() {
   updateSidebarCounts();
   renderBagList();
   renderMain();
+  renderMobileContent();
+  renderBagsDrawer();
+  renderAlertsDrawer();
+  updateAlertBadge();
+  updateMoreCounts();
+  saveToStorage();
 }
 
 function updateSidebarCounts() {
   Object.keys(SCENARIO_LABELS).forEach(s => {
-    const el = document.getElementById(`count-${s}`);
+    const el = document.getElementById('count-' + s);
     if (el) {
       const list = scenarioItems(s);
-      el.textContent = `${list.filter(i => i.checked).length}/${list.length} packed`;
+      el.textContent = list.filter(i => i.checked).length + '/' + list.length + ' packed';
     }
   });
 }
@@ -1099,9 +991,9 @@ function renderBagList() {
   const el = document.getElementById('bag-list');
   if (!bags.length) { el.innerHTML = ''; return; }
   el.innerHTML = bags.map(b => `
-    <div class="bag-btn" style="display:flex;align-items:center;padding:8px 20px;gap:8px;">
+    <div style="display:flex;align-items:center;padding:8px 20px;gap:8px">
       <span style="flex:1;font-size:12px;color:var(--text)">${b.name}</span>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">${b.liters}L</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">${b.liters}${b.litersExpanded ? '–' + b.litersExpanded : ''}L</span>
     </div>
   `).join('');
 }
@@ -1109,7 +1001,7 @@ function renderBagList() {
 function getFilteredItems() {
   let list;
   if (currentView === 'expiring') {
-    list = items.filter(i => { const s = expiryStatus(i.expiry); return s === 'warn'; });
+    list = items.filter(i => expiryStatus(i.expiry) === 'warn');
   } else if (currentView === 'expired') {
     list = items.filter(i => expiryStatus(i.expiry) === 'expired');
   } else if (currentView === 'missing') {
@@ -1117,7 +1009,6 @@ function getFilteredItems() {
   } else {
     list = items.filter(i => i.scenario === currentScenario);
   }
-
   if (currentFilter !== 'all') list = list.filter(i => i.category === currentFilter);
   if (searchQuery) list = list.filter(i =>
     i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1126,38 +1017,30 @@ function getFilteredItems() {
   return list;
 }
 
+// ── DESKTOP RENDER ────────────────────────────────────────────
 function renderMain() {
   const main = document.getElementById('main-content');
   const scenarioList = scenarioItems(currentScenario);
   const filteredList = getFilteredItems();
-
   const packed = scenarioList.filter(i => i.checked).length;
   const total = scenarioList.length;
   const pct = total ? Math.round(packed / total * 100) : 0;
-  const usedVol = totalVolume(scenarioList.filter(i => i.checked));
   const totalVol = totalVolume(scenarioList);
+  const usedVol = totalVolume(scenarioList.filter(i => i.checked));
   const expiringSoon = items.filter(i => expiryStatus(i.expiry) === 'warn').length;
   const expired = items.filter(i => expiryStatus(i.expiry) === 'expired').length;
 
-  // Assigned bag
   const assignedBag = bags.find(b => b.scenario === currentScenario);
   const bagCapacity = assignedBag ? assignedBag.liters : null;
-  const volPct = bagCapacity ? Math.min(100, Math.round(usedVol / bagCapacity * 100)) : null;
-  const gaugeColor = volPct > 90 ? 'var(--danger)' : volPct > 70 ? 'var(--warn)' : 'var(--accent)';
-
-  const circumference = 2 * Math.PI * 30;
-  const offset = circumference - (volPct || 0) / 100 * circumference;
-
-  // Group by category
   const categories = [...new Set(filteredList.map(i => i.category))];
 
   main.innerHTML = `
     <div class="page-header">
       <div>
-        <div class="page-title">${SCENARIO_ICONS[currentScenario]} ${SCENARIO_LABELS[currentScenario] || 'All Items'}</div>
+        <div class="page-title">${SCENARIO_ICONS[currentScenario]} ${SCENARIO_LABELS[currentScenario]}</div>
         <div class="page-subtitle">
-          ${currentView !== 'all' ? `VIEW: ${currentView.toUpperCase()} — ` : ''}
-          ${filteredList.length} items${bagCapacity ? ` · Bag: ${assignedBag.name} (${bagCapacity}L)` : ' · No bag assigned'}
+          ${currentView !== 'all' ? 'VIEW: ' + currentView.toUpperCase() + ' — ' : ''}
+          ${filteredList.length} items${assignedBag ? ' · ' + assignedBag.name + ' (' + bagCapacity + 'L)' : ' · No bag assigned'}
         </div>
       </div>
     </div>
@@ -1167,9 +1050,9 @@ function renderMain() {
       <div class="alert-icon">⚠️</div>
       <div class="alert-text">
         <strong>Maintenance Required</strong>
-        ${expired ? `${expired} item(s) <span style="color:var(--danger)">expired</span>` : ''}
-        ${expiringSoon ? `${expiringSoon} item(s) expiring within 90 days` : ''}
-        — check the Expiring / Expired views.
+        ${expired ? expired + ' item(s) <span style="color:var(--danger)">expired</span>' : ''}
+        ${expiringSoon ? expiringSoon + ' item(s) expiring within 90 days' : ''}
+        — check Alerts.
       </div>
     </div>` : ''}
 
@@ -1177,25 +1060,21 @@ function renderMain() {
       <div class="stat-card">
         <div class="stat-val" style="color:var(--accent)">${pct}%</div>
         <div class="stat-label">Packed Complete</div>
-        <div class="progress-bar" style="margin-top:8px">
-          <div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div>
-        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
       </div>
       <div class="stat-card">
         <div class="stat-val">${packed}/${total}</div>
         <div class="stat-label">Items Checked</div>
       </div>
       <div class="stat-card">
-        <div class="stat-val" style="color:${volPct > 90 ? 'var(--danger)' : 'var(--text)'}">
+        <div class="stat-val" style="color:${bagCapacity && totalVol > bagCapacity ? 'var(--danger)' : 'var(--text)'}">
           ${totalVol.toFixed(1)}L
         </div>
-        <div class="stat-label">Total Item Volume${bagCapacity ? ` / ${bagCapacity}L cap` : ''}</div>
-        ${bagCapacity ? `<div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${Math.min(100,Math.round(totalVol/bagCapacity*100))}%;background:${totalVol/bagCapacity>1?'var(--danger)':'var(--good)'}"></div></div>` : ''}
+        <div class="stat-label">Total Volume${bagCapacity ? ' / ' + bagCapacity + 'L cap' : ''}</div>
+        ${bagCapacity ? `<div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,Math.round(totalVol/bagCapacity*100))}%;background:${totalVol>bagCapacity?'var(--danger)':'var(--good)'}"></div></div>` : ''}
       </div>
       <div class="stat-card">
-        <div class="stat-val" style="color:${expired?'var(--danger)':expiringSoon?'var(--warn)':'var(--good)'}">
-          ${expired + expiringSoon}
-        </div>
+        <div class="stat-val" style="color:${expired?'var(--danger)':expiringSoon?'var(--warn)':'var(--good)'}">${expired + expiringSoon}</div>
         <div class="stat-label">Need Rotation</div>
       </div>
     </div>
@@ -1203,7 +1082,7 @@ function renderMain() {
     <div class="filter-bar">
       <button class="filter-chip ${currentFilter==='all'?'active':''}" onclick="setFilter('all')">All</button>
       ${['water','food','shelter','medical','comms','tools','docs','power','hygiene','nav'].map(c =>
-        `<button class="filter-chip ${currentFilter===c?'active':''}" onclick="setFilter('${c}')">${CAT_LABELS[c]}</button>`
+        '<button class="filter-chip ' + (currentFilter===c?'active':'') + '" onclick="setFilter(\'' + c + '\')">' + CAT_LABELS[c] + '</button>'
       ).join('')}
       <input class="search-box" placeholder="🔍 Search items..." oninput="searchQuery=this.value;renderMain()" value="${searchQuery}">
     </div>
@@ -1212,7 +1091,7 @@ function renderMain() {
       <div class="empty-state">
         <div class="empty-icon">📦</div>
         <div class="empty-title">No items here</div>
-        <div>Add items using the + Add Item button, or adjust your filters.</div>
+        <div>Add items or adjust your filters.</div>
       </div>
     ` : categories.map(cat => {
       const catItems = filteredList.filter(i => i.category === cat);
@@ -1225,14 +1104,9 @@ function renderMain() {
           </div>
           <div class="item-table">
             <div class="table-head">
-              <div class="th"></div>
-              <div class="th">Item</div>
-              <div class="th">Category</div>
-              <div class="th">Priority</div>
-              <div class="th">Volume</div>
-              <div class="th">Expiry</div>
-              <div class="th">Source</div>
-              <div class="th"></div>
+              <div class="th"></div><div class="th">Item</div><div class="th">Category</div>
+              <div class="th">Priority</div><div class="th">Volume</div>
+              <div class="th">Expiry</div><div class="th">Source</div><div class="th"></div>
             </div>
             ${catItems.map(item => renderItemRow(item)).join('')}
           </div>
@@ -1245,17 +1119,14 @@ function renderMain() {
 function renderItemRow(item) {
   const es = expiryStatus(item.expiry);
   const d = daysUntilExpiry(item.expiry);
-  let expiryLabel = '—';
-  let statusClass = '';
+  let expiryLabel = '—', statusClass = '';
   if (item.expiry) {
-    if (es === 'expired') { expiryLabel = `Exp ${d < -365 ? '>1yr ago' : Math.abs(d)+'d ago'}`; statusClass = 'status-expired'; }
-    else if (es === 'warn') { expiryLabel = `${d}d`; statusClass = 'status-warn'; }
-    else { const dt = new Date(item.expiry); expiryLabel = dt.toLocaleDateString('en-US',{month:'short',year:'numeric'}); statusClass = 'status-ok'; }
+    if (es === 'expired')   { expiryLabel = 'Exp ' + (d < -365 ? '>1yr ago' : Math.abs(d) + 'd ago'); statusClass = 'status-expired'; }
+    else if (es === 'warn') { expiryLabel = d + 'd'; statusClass = 'status-warn'; }
+    else { expiryLabel = new Date(item.expiry).toLocaleDateString('en-US',{month:'short',year:'numeric'}); statusClass = 'status-ok'; }
   }
   const pcolor = PRIORITY_COLORS[item.priority] || 'var(--muted)';
-  const volMax = 5;
-  const volFill = Math.min(100, (item.volume / volMax) * 100);
-
+  const volFill = Math.min(100, (item.volume / 5) * 100);
   return `
     <div class="item-row" style="${item.checked ? 'opacity:0.55' : ''}">
       <div class="item-check ${item.checked ? 'checked' : ''}" onclick="toggleCheck(${item.id})">${item.checked ? '✓' : ''}</div>
@@ -1264,28 +1135,202 @@ function renderItemRow(item) {
         <div class="item-desc">${item.desc || ''}</div>
         <div class="source-tag">▸ ${item.source}</div>
       </div>
-      <div class="td">
-        <span class="category-pill cat-${item.category}">${CAT_LABELS[item.category]?.split(' ')[0]}</span>
-      </div>
-      <div class="td">
-        <span class="priority-dot" style="background:${pcolor}"></span>${item.priority}
-      </div>
+      <div class="td"><span class="category-pill cat-${item.category}">${(CAT_LABELS[item.category]||'').split(' ')[0]}</span></div>
+      <div class="td"><span class="priority-dot" style="background:${pcolor}"></span>${item.priority}</div>
       <div class="td">
         <div>${item.volume ? item.volume + 'L' : '—'}</div>
-        ${item.volume ? `<div class="vol-bar" style="margin-top:4px"><div class="vol-bar-fill" style="width:${volFill}%"></div></div>` : ''}
+        ${item.volume ? '<div class="vol-bar" style="margin-top:4px"><div class="vol-bar-fill" style="width:' + volFill + '%"></div></div>' : ''}
       </div>
-      <div class="td">
-        ${es ? `<span class="status-badge ${statusClass}">${expiryLabel}</span>` : '—'}
+      <div class="td">${es ? '<span class="status-badge ' + statusClass + '">' + expiryLabel + '</span>' : '—'}</div>
+      <div class="td" style="font-size:10px">${item.source}</div>
+      <div class="row-actions"><button class="icon-btn" onclick="deleteItem(${item.id})">🗑</button></div>
+    </div>
+  `;
+}
+
+// ── MOBILE RENDER ─────────────────────────────────────────────
+function renderMobileContent() {
+  const el = document.getElementById('mobile-content');
+  const scenarioList = scenarioItems(currentScenario);
+  const filteredList = getFilteredItems();
+  const packed = scenarioList.filter(i => i.checked).length;
+  const total = scenarioList.length;
+  const pct = total ? Math.round(packed / total * 100) : 0;
+  const totalVol = totalVolume(scenarioList);
+  const expiringSoon = items.filter(i => expiryStatus(i.expiry) === 'warn').length;
+  const expired = items.filter(i => expiryStatus(i.expiry) === 'expired').length;
+  const assignedBag = bags.find(b => b.scenario === currentScenario);
+  const bagCapacity = assignedBag ? assignedBag.liters : null;
+  const categories = [...new Set(filteredList.map(i => i.category))];
+
+  const viewBanner = currentView !== 'all' ? `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:8px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1px">FILTER: ${currentView.toUpperCase()}</span>
+      <button onclick="setView('all')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:0 4px">×</button>
+    </div>` : '';
+
+  el.innerHTML = viewBanner + `
+    <div class="mobile-stats-grid">
+      <div class="mobile-stat-card">
+        <div class="mobile-stat-val" style="color:var(--accent)">${pct}%</div>
+        <div class="mobile-stat-label">Packed</div>
+        <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
       </div>
-      <div class="td" style="font-size:10px;color:var(--muted)">${item.source}</div>
-      <div class="row-actions">
-        <button class="icon-btn" title="Delete" onclick="deleteItem(${item.id})">🗑</button>
+      <div class="mobile-stat-card">
+        <div class="mobile-stat-val">${packed}/${total}</div>
+        <div class="mobile-stat-label">Checked</div>
+      </div>
+      <div class="mobile-stat-card">
+        <div class="mobile-stat-val" style="color:${bagCapacity && totalVol > bagCapacity ? 'var(--danger)' : 'var(--text)'}">
+          ${totalVol.toFixed(1)}L
+        </div>
+        <div class="mobile-stat-label">${bagCapacity ? 'of ' + bagCapacity + 'L' : 'Total Vol'}</div>
+        ${bagCapacity ? `<div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${Math.min(100,Math.round(totalVol/bagCapacity*100))}%;background:${totalVol>bagCapacity?'var(--danger)':'var(--good)'}"></div></div>` : ''}
+      </div>
+      <div class="mobile-stat-card">
+        <div class="mobile-stat-val" style="color:${expired?'var(--danger)':expiringSoon?'var(--warn)':'var(--good)'}">${expired + expiringSoon}</div>
+        <div class="mobile-stat-label">Rotation</div>
+      </div>
+    </div>
+
+    ${filteredList.length === 0 ? `
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">No items here</div>
+        <div>Tap ＋ to add an item, or change your view filter.</div>
+      </div>
+    ` : categories.map(cat => {
+      const catItems = filteredList.filter(i => i.category === cat);
+      const catPacked = catItems.filter(i => i.checked).length;
+      return `
+        <div class="mobile-section">
+          <div class="mobile-section-header">
+            <div class="mobile-section-name">${CAT_LABELS[cat]}</div>
+            <div class="mobile-section-count">${catPacked}/${catItems.length}</div>
+          </div>
+          ${catItems.map(item => renderMobileCard(item)).join('')}
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+function renderMobileCard(item) {
+  const es = expiryStatus(item.expiry);
+  const d = daysUntilExpiry(item.expiry);
+  let expiryBadge = '';
+  if (es === 'expired')   expiryBadge = `<span class="status-badge status-expired">${Math.abs(d)}d ago</span>`;
+  else if (es === 'warn') expiryBadge = `<span class="status-badge status-warn">${d}d left</span>`;
+  else if (es === 'ok') {
+    expiryBadge = `<span class="status-badge status-ok">${new Date(item.expiry).toLocaleDateString('en-US',{month:'short',year:'numeric'})}</span>`;
+  }
+  const pcolor = PRIORITY_COLORS[item.priority] || 'var(--muted)';
+  return `
+    <div class="mobile-item-card" style="border-left:3px solid ${pcolor};${item.checked?'opacity:0.55':''}">
+      <div class="mic-top">
+        <div class="mic-check ${item.checked?'checked':''}" onclick="event.stopPropagation();toggleCheck(${item.id})">${item.checked?'✓':''}</div>
+        <div class="mic-body">
+          <div class="mic-name ${item.checked?'strikethrough':''}">${item.name}</div>
+          ${item.desc ? `<div class="mic-desc">${item.desc}</div>` : ''}
+          <div class="mic-badges">
+            <span class="category-pill cat-${item.category}">${(CAT_LABELS[item.category]||'').split(' ')[0]}</span>
+            ${item.volume ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">${item.volume}L</span>` : ''}
+            ${expiryBadge}
+          </div>
+        </div>
+        <button class="icon-btn" onclick="event.stopPropagation();deleteItem(${item.id})" style="flex-shrink:0;margin-left:4px">🗑</button>
       </div>
     </div>
   `;
 }
 
-// ─── INIT ────────────────────────────────────────────────────────────────────
+function renderBagsDrawer() {
+  const el = document.getElementById('bags-drawer-body');
+  if (!el) return;
+  if (!bags.length) {
+    el.innerHTML = `
+      <div class="empty-state" style="padding:32px 0">
+        <div class="empty-icon">🎒</div>
+        <div class="empty-title">No bags registered</div>
+        <div style="margin-top:14px">
+          <button class="btn btn-primary" onclick="openModal('bag-modal');closeAllDrawers()">＋ Register a Bag</button>
+        </div>
+      </div>`;
+    return;
+  }
+  el.innerHTML = bags.map(b => {
+    const bagItems = scenarioItems(b.scenario);
+    const vol = totalVolume(bagItems);
+    const cap = b.liters;
+    const pct = cap ? Math.min(100, Math.round(vol / cap * 100)) : 0;
+    const overExpanded = b.litersExpanded && vol > cap && vol <= b.litersExpanded;
+    const over = vol > (b.litersExpanded || cap);
+    return `
+      <div class="mobile-bag-card">
+        <div class="mobile-bag-name">${b.name}</div>
+        <div class="mobile-bag-meta">
+          ${b.liters}L${b.litersExpanded ? ' / ' + b.litersExpanded + 'L expanded' : ''} · ${SCENARIO_LABELS[b.scenario] || b.scenario}
+          ${b.dims ? '<br>' + b.dims : ''}
+          ${b.notes ? '<br>' + b.notes : ''}
+          ${cap ? '<br><span style="color:' + (over?'var(--danger)':overExpanded?'var(--warn)':'var(--good)') + '">' + vol.toFixed(1) + 'L loaded (' + pct + '%)' + (overExpanded ? ' — expanded mode needed' : over ? ' — over capacity' : '') + '</span>' : ''}
+        </div>
+        ${cap ? `<div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${pct}%;background:${over?'var(--danger)':overExpanded?'var(--warn)':'var(--good)'}"></div></div>` : ''}
+      </div>
+    `;
+  }).join('') + `
+    <button class="btn btn-ghost" style="width:100%;margin-top:4px" onclick="openModal('bag-modal');closeAllDrawers()">＋ Register Another Bag</button>
+  `;
+}
+
+function renderAlertsDrawer() {
+  const el = document.getElementById('alerts-drawer-body');
+  if (!el) return;
+  const alertItems = items.filter(i => expiryStatus(i.expiry) === 'warn' || expiryStatus(i.expiry) === 'expired');
+  if (!alertItems.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:32px 0"><div class="empty-icon">✅</div><div class="empty-title">All clear</div><div>No expiring or expired items.</div></div>`;
+    return;
+  }
+  el.innerHTML = alertItems.map(item => {
+    const es = expiryStatus(item.expiry);
+    const d = daysUntilExpiry(item.expiry);
+    const label = es === 'expired' ? 'Expired ' + Math.abs(d) + 'd ago' : 'Expires in ' + d + 'd';
+    const color = es === 'expired' ? 'var(--danger)' : 'var(--warn)';
+    return `
+      <div class="mobile-alert-row">
+        <div style="font-size:20px;flex-shrink:0;margin-top:1px">${es==='expired'?'❌':'⚠️'}</div>
+        <div>
+          <div style="font-weight:500;font-size:13px">${item.name}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:${color};margin-top:2px">${label}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${SCENARIO_LABELS[item.scenario]} · ${item.category}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateAlertBadge() {
+  const count = items.filter(i => { const s = expiryStatus(i.expiry); return s === 'warn' || s === 'expired'; }).length;
+  const badge = document.getElementById('alert-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : count;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function updateMoreCounts() {
+  const list = scenarioItems(currentScenario);
+  const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  el('more-count-all',      list.length + ' items');
+  el('more-count-missing',  list.filter(i => !i.checked).length + ' items');
+  el('more-count-expiring', items.filter(i => expiryStatus(i.expiry) === 'warn').length + ' items');
+  el('more-count-expired',  items.filter(i => expiryStatus(i.expiry) === 'expired').length + ' items');
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+loadFromStorage();
 render();
 </script>
 </body>
