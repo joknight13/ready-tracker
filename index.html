@@ -499,6 +499,9 @@ main { padding: 28px; overflow-y: auto; }
   <button class="scenario-pill" data-scenario="vehicle" onclick="setScenario('vehicle')">🚗 Vehicle</button>
   <button class="scenario-pill" data-scenario="wildfire" onclick="setScenario('wildfire')">🔥 Wildfire</button>
   <button class="scenario-pill" data-scenario="earthquake" onclick="setScenario('earthquake')">⚡ CERT</button>
+  <button class="scenario-pill" data-scenario="edc" onclick="setScenario('edc')">👜 EDC</button>
+  <button class="scenario-pill" data-scenario="inch" onclick="setScenario('inch')">🏕 INCH</button>
+  <button class="scenario-pill" data-scenario="wush" onclick="setScenario('wush')">🔔 WUSH</button>
 </div>
 
 <!-- DESKTOP APP GRID -->
@@ -546,6 +549,27 @@ main { padding: 28px; overflow-y: auto; }
         <span class="scenario-meta">
           <span>Earthquake / CERT</span>
           <span class="scenario-count" id="count-earthquake">0 items</span>
+        </span>
+      </button>
+      <button class="scenario-btn" data-scenario="edc" onclick="setScenario('edc')">
+        <span class="scenario-icon">👜</span>
+        <span class="scenario-meta">
+          <span>Everyday Carry (EDC)</span>
+          <span class="scenario-count" id="count-edc">0 items</span>
+        </span>
+      </button>
+      <button class="scenario-btn" data-scenario="inch" onclick="setScenario('inch')">
+        <span class="scenario-icon">🏕</span>
+        <span class="scenario-meta">
+          <span>INCH Bag</span>
+          <span class="scenario-count" id="count-inch">0 items</span>
+        </span>
+      </button>
+      <button class="scenario-btn" data-scenario="wush" onclick="setScenario('wush')">
+        <span class="scenario-icon">🔔</span>
+        <span class="scenario-meta">
+          <span>WUSH Bag</span>
+          <span class="scenario-count" id="count-wush">0 items</span>
         </span>
       </button>
     </div>
@@ -668,6 +692,9 @@ main { padding: 28px; overflow-y: auto; }
           <option value="vehicle">Vehicle Kit</option>
           <option value="wildfire">Wildfire Evac</option>
           <option value="earthquake">Earthquake / CERT</option>
+          <option value="edc">Everyday Carry (EDC)</option>
+          <option value="inch">INCH Bag</option>
+          <option value="wush">WUSH Bag</option>
         </select>
       </div>
       <div class="form-group">
@@ -744,6 +771,9 @@ main { padding: 28px; overflow-y: auto; }
           <option value="vehicle">Vehicle Kit</option>
           <option value="wildfire">Wildfire Evac</option>
           <option value="earthquake">Earthquake / CERT</option>
+          <option value="edc">Everyday Carry (EDC)</option>
+          <option value="inch">INCH Bag</option>
+          <option value="wush">WUSH Bag</option>
         </select>
       </div>
       <div class="form-group">
@@ -799,10 +829,12 @@ let searchQuery = '';
 
 const SCENARIO_LABELS = {
   '72hr': '72-Hour Evacuation', 'ghb': 'Get-Home Bag', 'sip': 'Shelter-in-Place',
-  'vehicle': 'Vehicle Kit', 'wildfire': 'Wildfire Evac', 'earthquake': 'Earthquake / CERT'
+  'vehicle': 'Vehicle Kit', 'wildfire': 'Wildfire Evac', 'earthquake': 'Earthquake / CERT',
+  'edc': 'Everyday Carry (EDC)', 'inch': 'INCH Bag', 'wush': 'WUSH Bag'
 };
 const SCENARIO_ICONS = {
-  '72hr': '🎒', 'ghb': '🚶', 'sip': '🏠', 'vehicle': '🚗', 'wildfire': '🔥', 'earthquake': '⚡'
+  '72hr': '🎒', 'ghb': '🚶', 'sip': '🏠', 'vehicle': '🚗', 'wildfire': '🔥', 'earthquake': '⚡',
+  'edc': '👜', 'inch': '🏕', 'wush': '🔔'
 };
 const CAT_LABELS = {
   water: '💧 Water', food: '🍫 Food', shelter: '⛺ Shelter', medical: '🩺 Medical',
@@ -869,6 +901,77 @@ let items = [
   { id:52, name:'Blankets (2)',                             desc:'Wool or synthetic, compact',                               category:'shelter', priority:'high',     scenario:'vehicle',    volume:4.0,  weight:'4 lb',   expiry:null,           source:'FEMA',      checked:false },
   { id:53, name:'Multi-tool + work gloves',                 desc:'For roadside emergency repairs',                           category:'tools',   priority:'high',     scenario:'vehicle',    volume:0.5,  weight:'12 oz',  expiry:null,           source:'CERT',      checked:false },
   { id:54, name:'Emergency food bars (2-day)',              desc:'Datrex or Mayday bars',                                    category:'food',    priority:'high',     scenario:'vehicle',    volume:0.5,  weight:'12 oz',  expiry:nextDate(1825), source:'FEMA',      checked:false },
+  // ── EDC ──────────────────────────────────────────────────────
+  { id:55,  name:'Maxpedition E.D.C. Pocket Organizer',      desc:'7"×5" pouch — holds all EDC items, multiple compartments', category:'tools',   priority:'high',     scenario:'edc',        volume:0.5,  weight:'3 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:56,  name:'Fenix E05 85 Lumen LED Keychain Flashlight',desc:'Keychain-sized, AAA powered — primary EDC light',         category:'tools',   priority:'high',     scenario:'edc',        volume:0.02, weight:'0.4 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:57,  name:'Energizer LED Keychain Light (backup)',     desc:'Secondary keychain light — redundant illumination',       category:'tools',   priority:'medium',   scenario:'edc',        volume:0.02, weight:'0.3 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:58,  name:'Spare AAA eneloop battery',                 desc:'Pre-charged NiMH, long shelf life',                       category:'power',   priority:'medium',   scenario:'edc',        volume:0.01, weight:'0.5 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:59,  name:'OREI Ultra Slim Aluminum Battery Bank',     desc:'Compact portable charger for phone top-ups',              category:'power',   priority:'high',     scenario:'edc',        volume:0.15, weight:'2.5 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:60,  name:'Mini 6" USB cable',                         desc:'Short USB-A/C cable — fits in organizer pouch',           category:'power',   priority:'medium',   scenario:'edc',        volume:0.02, weight:'0.3 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:61,  name:'Gerber Dime Micro Multi-tool',              desc:'Pliers, knife, scissors, screwdrivers, file',             category:'tools',   priority:'high',     scenario:'edc',        volume:0.05, weight:'2.2 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:62,  name:'Credit Card Survival Pocket Tool',          desc:'18-in-1 flat stainless steel card tool',                  category:'tools',   priority:'medium',   scenario:'edc',        volume:0.01, weight:'0.4 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:63,  name:'Winchester 2.5" Brass Pocket Knife',        desc:'Small legal-everywhere pocket knife',                     category:'tools',   priority:'high',     scenario:'edc',        volume:0.04, weight:'1.5 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:64,  name:'CRKT Eat N Tool',                           desc:'Spork + bottle opener + flathead — $5 stainless utensil', category:'tools',  priority:'low',      scenario:'edc',        volume:0.03, weight:'0.8 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:65,  name:'Rite in the Rain Notebook',                 desc:'All-weather field notebook — writes wet or dry',          category:'docs',    priority:'medium',   scenario:'edc',        volume:0.08, weight:'1.5 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:66,  name:'Fisher Space Pen',                          desc:'Writes upside-down, in cold, under water',                category:'docs',    priority:'medium',   scenario:'edc',        volume:0.03, weight:'1 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:67,  name:'Sharpie Mini marker',                       desc:'Permanent marker — labeling, writing on surfaces',        category:'tools',   priority:'low',      scenario:'edc',        volume:0.02, weight:'0.3 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:68,  name:'USB flash drive (encrypted docs)',          desc:'IDs, insurance, financials — encrypted local backup',     category:'docs',    priority:'critical', scenario:'edc',        volume:0.01, weight:'0.2 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:69,  name:'UST JetScream Micro Whistle',               desc:'125 dB pealess signal whistle, keychain attachment',      category:'comms',   priority:'high',     scenario:'edc',        volume:0.01, weight:'0.3 oz', expiry:null,           source:'Wilderness',checked:false },
+  { id:70,  name:'Tiny baseplate compass',                    desc:'Button or mini compass for basic orientation',            category:'nav',     priority:'medium',   scenario:'edc',        volume:0.01, weight:'0.2 oz', expiry:null,           source:'Wilderness',checked:false },
+  { id:71,  name:'Military Glass Signal Mirror',              desc:'Retroreflective — visible for miles in daylight',         category:'comms',   priority:'medium',   scenario:'edc',        volume:0.03, weight:'1 oz',   expiry:null,           source:'Wilderness',checked:false },
+  { id:72,  name:'1 Liter Survival Water Bag',                desc:'Collapsible Platypus-style bag — flat when empty',        category:'water',   priority:'high',     scenario:'edc',        volume:0.05, weight:'1 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:73,  name:'Aquatabs water purification tablets',       desc:'1 tab treats 1L — 30-ct strip',                           category:'water',   priority:'high',     scenario:'edc',        volume:0.02, weight:'0.3 oz', expiry:nextDate(1460), source:'Custom',    checked:false },
+  { id:74,  name:'UST 1.0 Aluminum B.A.S.E. Case',           desc:'Compact tin — personal meds, bandages, aspirin, antacid', category:'medical', priority:'critical', scenario:'edc',        volume:0.15, weight:'3 oz',   expiry:nextDate(365),  source:'RedCross',  checked:false },
+  { id:75,  name:'CELOX Temporary Wound Treatment 2g',        desc:'Hemorrhage control gauze — single serious bleed',         category:'medical', priority:'high',     scenario:'edc',        volume:0.02, weight:'0.4 oz', expiry:nextDate(1095), source:'Wilderness',checked:false },
+  { id:76,  name:'Surefire Sonic Defenders Earplugs',         desc:'Reusable hearing protection — attenuates impulse noise',  category:'hygiene', priority:'low',      scenario:'edc',        volume:0.02, weight:'0.4 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:77,  name:'Cleanwell Sanitizing Pocket Wipes',         desc:'Antibacterial wipes, 10-ct — hand hygiene anywhere',      category:'hygiene', priority:'medium',   scenario:'edc',        volume:0.04, weight:'0.8 oz', expiry:nextDate(365),  source:'CDC',       checked:false },
+  { id:78,  name:'iOSAT Potassium Iodide Tablets',            desc:'FEMA-recommended nuclear event protection, 14-ct',        category:'medical', priority:'medium',   scenario:'edc',        volume:0.04, weight:'0.4 oz', expiry:nextDate(2555), source:'FEMA',      checked:false },
+  { id:79,  name:'Respirator mask (N95 / KN95)',              desc:'Kimberly Clark or 3M — folds flat in organizer',          category:'hygiene', priority:'high',     scenario:'edc',        volume:0.04, weight:'0.4 oz', expiry:nextDate(1825), source:'CDC',       checked:false },
+  { id:80,  name:'Nitrile gloves (pair)',                     desc:'Medical grade — protection from contaminants',            category:'medical', priority:'medium',   scenario:'edc',        volume:0.02, weight:'0.3 oz', expiry:null,           source:'RedCross',  checked:false },
+  { id:81,  name:'Lip balm',                                  desc:'Wind and sun protection — morale in extreme conditions',  category:'hygiene', priority:'low',      scenario:'edc',        volume:0.02, weight:'0.4 oz', expiry:nextDate(730),  source:'Custom',    checked:false },
+  { id:82,  name:'Mini lighter',                              desc:'Bic or Clipper mini — fire starting and signaling',       category:'tools',   priority:'high',     scenario:'edc',        volume:0.02, weight:'0.5 oz', expiry:null,           source:'Wilderness',checked:false },
+  { id:83,  name:'34ft tarred braided nylon twine (#12)',     desc:'Strong thin cordage — snares, lashing, clothesline',      category:'tools',   priority:'medium',   scenario:'edc',        volume:0.1,  weight:'1.5 oz', expiry:null,           source:'Wilderness',checked:false },
+  { id:84,  name:'Gorilla Tape (10ft on credit card)',        desc:'Pre-wrapped on card — strongest tape anywhere',           category:'tools',   priority:'medium',   scenario:'edc',        volume:0.01, weight:'0.5 oz', expiry:null,           source:'CERT',      checked:false },
+  { id:85,  name:'Sewing kit + rubber bands + safety pins',  desc:'Clothing repairs, fastening, improvised use',             category:'tools',   priority:'low',      scenario:'edc',        volume:0.04, weight:'0.5 oz', expiry:null,           source:'Custom',    checked:false },
+  { id:86,  name:'Emergency cash ($300–$500)',                desc:'Small bills, mixed denominations — ATMs may be down',     category:'docs',    priority:'critical', scenario:'edc',        volume:0.03, weight:'1 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:87,  name:'Loksak waterproof bags (2)',                desc:'Airtight/submersible — protect docs and electronics',     category:'shelter', priority:'medium',   scenario:'edc',        volume:0.05, weight:'0.4 oz', expiry:null,           source:'Custom',    checked:false },
+  // ── INCH ─────────────────────────────────────────────────────
+  { id:88,  name:'4-season tent (large)',                     desc:'Freestanding mountaineering tent — primary shelter structure', category:'shelter', priority:'critical', scenario:'inch',   volume:12.0, weight:'8 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:89,  name:'Heavy-duty tarps (multiple)',               desc:'10×12 poly or silnylon — layered shelter + ground cloth', category:'shelter', priority:'critical', scenario:'inch',      volume:5.0,  weight:'4 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:90,  name:'Telescoping tarp poles (set)',              desc:'Adjustable 28"–60" aluminum poles for tarp configurations', category:'shelter', priority:'high',   scenario:'inch',      volume:3.0,  weight:'2 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:91,  name:'High-output camp stove + large fuel supply',desc:'2-burner Coleman or Camp Chef + 4+ propane canisters',   category:'food',    priority:'critical', scenario:'inch',      volume:8.0,  weight:'8 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:92,  name:'Camping cookware set',                      desc:'Nesting pot, pan, lid, utensils — full portable kitchen', category:'food',    priority:'high',     scenario:'inch',      volume:3.0,  weight:'3 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:93,  name:'Long-term food supply (30-day)',            desc:'Freeze-dried buckets — 2000 cal/day per person',          category:'food',    priority:'critical', scenario:'inch',      volume:50.0, weight:'40 lb',  expiry:nextDate(9125), source:'FEMA',      checked:false },
+  { id:94,  name:'Folding camp chairs (2)',                   desc:'Lightweight, 300 lb rated — comfort for extended stay',   category:'shelter', priority:'low',      scenario:'inch',      volume:10.0, weight:'6 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:95,  name:'Folding camp table',                        desc:'Aluminum roll-up — work and dining surface',              category:'shelter', priority:'low',      scenario:'inch',      volume:8.0,  weight:'5 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:96,  name:'Hammock (2-person)',                        desc:'ENO DoubleNest or similar — alternate sleep option',      category:'shelter', priority:'medium',   scenario:'inch',      volume:1.0,  weight:'1 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:97,  name:'Self-inflating sleeping pads (2)',          desc:'Therm-a-Rest or similar — insulates from ground cold',    category:'shelter', priority:'high',     scenario:'inch',      volume:6.0,  weight:'4 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:98,  name:'Toilet paper (vacuum-sealed, bulk)',        desc:'12+ compressed rolls — long-term sanitation',             category:'hygiene', priority:'high',     scenario:'inch',      volume:5.0,  weight:'3 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:99,  name:'Portable power station (500Wh+)',           desc:'Jackery 500 or Goal Zero Yeti — recharge via solar',      category:'power',   priority:'critical', scenario:'inch',      volume:8.0,  weight:'13 lb',  expiry:null,           source:'Custom',    checked:false },
+  { id:100, name:'Camp lanterns — area lighting (2)',         desc:'Goal Zero Lighthouse or LED lanterns for base camp',      category:'tools',   priority:'high',     scenario:'inch',      volume:2.0,  weight:'2 lb',   expiry:null,           source:'Custom',    checked:false },
+  { id:101, name:'Headlamps + spare batteries (2 sets)',      desc:'300+ lumen hands-free — one per person minimum',          category:'tools',   priority:'critical', scenario:'inch',      volume:0.6,  weight:'10 oz',  expiry:null,           source:'FEMA',      checked:false },
+  { id:102, name:'Paracord 550 (200ft)',                      desc:'Type III 7-strand — shelter rigging, repairs, traps',     category:'tools',   priority:'high',     scenario:'inch',      volume:1.5,  weight:'1 lb',   expiry:null,           source:'CERT',      checked:false },
+  { id:103, name:'Gorilla Tape (2 large rolls)',              desc:'Heavy-duty repair, weatherproofing, construction',        category:'tools',   priority:'high',     scenario:'inch',      volume:0.8,  weight:'1 lb',   expiry:null,           source:'CERT',      checked:false },
+  { id:104, name:'Clothes clips + 30ft drying line',         desc:'50 clips + nylon line — laundry and camp utility',        category:'hygiene', priority:'low',      scenario:'inch',      volume:0.3,  weight:'4 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:105, name:'Multipurpose axe and/or machete',          desc:'Fiskars X7 hatchet + Condor Golok — wood and brush',      category:'tools',   priority:'critical', scenario:'inch',      volume:3.0,  weight:'3 lb',   expiry:null,           source:'Wilderness',checked:false },
+  { id:106, name:'Lansky Dual Grit field sharpener',         desc:'Coarse + fine diamond rods — maintains all blades',       category:'tools',   priority:'medium',   scenario:'inch',      volume:0.2,  weight:'3 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:107, name:'SOG Entrenching Tool (folding shovel)',     desc:'Military-spec e-tool — digging, chopping, prying',        category:'tools',   priority:'high',     scenario:'inch',      volume:1.5,  weight:'2 lb',   expiry:null,           source:'Custom',    checked:false },
+  // ── WUSH ─────────────────────────────────────────────────────
+  { id:108, name:'Wallet + government-issued ID',             desc:'Primary ID always in bag — never leave without it',       category:'docs',    priority:'critical', scenario:'wush',      volume:0.05, weight:'2 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:109, name:'Cell phone + all charging cables',          desc:'Fully charged — cables for every device in household',   category:'comms',   priority:'critical', scenario:'wush',      volume:0.3,  weight:'8 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:110, name:'Backup 3G dumb phone',                      desc:'$30 Walmart burner — lasts weeks between charges',       category:'comms',   priority:'high',     scenario:'wush',      volume:0.2,  weight:'4 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:111, name:'USB battery pack (4000+ mAh)',              desc:'Multi-output — charges phones up to 4×, holds 3–4 months', category:'power', priority:'high',     scenario:'wush',      volume:0.3,  weight:'6 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:112, name:'Multi-port USB wall charger',               desc:'4-port — charge all family devices simultaneously',       category:'power',   priority:'medium',   scenario:'wush',      volume:0.15, weight:'3 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:113, name:'House key copies (lanyard)',                desc:'Spare keys clearly labeled — stays in bag unused',        category:'docs',    priority:'critical', scenario:'wush',      volume:0.05, weight:'1 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:114, name:'Car key duplicates (lanyard)',              desc:'Spare vehicle keys — prevents being stranded',            category:'docs',    priority:'critical', scenario:'wush',      volume:0.05, weight:'1 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:115, name:'Portable USB hard drive (3TB)',             desc:'Labeled "Emergency Backup" — family photos + all files', category:'docs',    priority:'high',     scenario:'wush',      volume:0.2,  weight:'4 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:116, name:'Printed copies of important documents',     desc:'IDs, passport, insurance, deed, marriage license, credit cards', category:'docs', priority:'critical', scenario:'wush', volume:0.1,  weight:'3 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:117, name:'Emergency cash (1-week supply)',            desc:'$500+ mixed small bills — ATMs offline, cards declined',  category:'docs',    priority:'critical', scenario:'wush',      volume:0.05, weight:'1 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:118, name:'Prescription medications (1-week supply)', desc:'All chronic meds in original containers + printed list',  category:'medical', priority:'critical', scenario:'wush',      volume:0.3,  weight:'4 oz',   expiry:nextDate(180),  source:'FEMA',      checked:false },
+  { id:119, name:'Backup prescription glasses / contacts',   desc:'Old pair — vision is critical during displacement',       category:'medical', priority:'high',     scenario:'wush',      volume:0.2,  weight:'2 oz',   expiry:null,           source:'Custom',    checked:false },
+  { id:120, name:'Compact flashlight',                        desc:'100+ lumen + spare batteries — nighttime evacuation',    category:'tools',   priority:'high',     scenario:'wush',      volume:0.2,  weight:'4 oz',   expiry:null,           source:'FEMA',      checked:false },
+  { id:121, name:'High-calorie snack bars (2-day supply)',    desc:'Clif, Kind, or Datrex — fast fuel on the move',          category:'food',    priority:'high',     scenario:'wush',      volume:0.4,  weight:'12 oz',  expiry:nextDate(365),  source:'FEMA',      checked:false },
+  { id:122, name:'Basic first aid supplies',                  desc:'Bandages, antiseptic wipes, OTC meds — travel-size kit', category:'medical', priority:'high',     scenario:'wush',      volume:0.5,  weight:'8 oz',   expiry:nextDate(730),  source:'RedCross',  checked:false },
 ];
 
 let bags = [
@@ -876,7 +979,7 @@ let bags = [
   { id:1002, name:'Eberlestock Fade Adapt', liters:28,   litersExpanded:40.7, scenario:'ghb',     dims:'21.75"H × 12.25"W × 7.5"D', notes:'Hidden scabbard — 28L collapsed / 40.7L expanded' },
 ];
 
-let nextId = 55;
+let nextId = 123;
 
 function nextDate(days) {
   const d = new Date();
