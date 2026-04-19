@@ -687,6 +687,7 @@ main { padding: 28px; overflow-y: auto; }
       <div class="form-group">
         <label class="form-label">Assigned Scenario</label>
         <select class="form-select" id="bag-scenario">
+          <option value="">— Unassigned —</option>
           <option value="72hr">72-Hour Evacuation</option>
           <option value="ghb">Get-Home Bag</option>
           <option value="sip">Shelter-in-Place</option>
@@ -710,6 +711,60 @@ main { padding: 28px; overflow-y: auto; }
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('bag-modal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveBag()">Register Bag</button>
+    </div>
+  </div>
+</div>
+
+<!-- BAG DETAIL MODAL -->
+<div class="modal-overlay" id="bag-detail-modal">
+  <div class="modal">
+    <input type="hidden" id="bd-id">
+    <div class="modal-title" id="bd-title">Bag Details</div>
+    <div class="form-group">
+      <label class="form-label">Bag Name / Label</label>
+      <input class="form-input" id="bd-name" placeholder="e.g. Red MOLLE 40L">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Volume (Liters)</label>
+        <input class="form-input" id="bd-liters" type="number" placeholder="e.g. 40">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expanded Volume (optional)</label>
+        <input class="form-input" id="bd-liters-expanded" type="number" placeholder="e.g. 53">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Assigned Scenario</label>
+        <select class="form-select" id="bd-scenario">
+          <option value="">— Unassigned —</option>
+          <option value="72hr">🎒 72-Hour Evacuation</option>
+          <option value="ghb">🚶 Get-Home Bag</option>
+          <option value="sip">🏠 Shelter-in-Place</option>
+          <option value="vehicle">🚗 Vehicle Kit</option>
+          <option value="wildfire">🔥 Wildfire Evac</option>
+          <option value="earthquake">⚡ Earthquake / CERT</option>
+          <option value="edc">👜 Everyday Carry (EDC)</option>
+          <option value="inch">🏕 INCH Bag</option>
+          <option value="wush">🔔 WUSH Bag</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dimensions (optional)</label>
+        <input class="form-input" id="bd-dims" placeholder='e.g. 25.5"H × 16.5"W × 7.75"D'>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes</label>
+      <input class="form-input" id="bd-notes" placeholder="Color, brand, special features...">
+    </div>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn btn-ghost btn-sm" style="color:var(--danger);border-color:var(--danger)" onclick="deleteBagFromDetail()">Delete Bag</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="closeModal('bag-detail-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveBagDetail()">Save Changes</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1055,6 +1110,9 @@ let bags = [
 
 let nextId = 164;
 
+const SEED_ITEMS = items.map(i => ({...i}));
+const SEED_BAGS  = bags.map(b => ({...b}));
+
 function nextDate(days) {
   const d = new Date();
   d.setDate(d.getDate() + days);
@@ -1075,8 +1133,16 @@ function loadFromStorage() {
     const si = localStorage.getItem('ready_items');
     const sb = localStorage.getItem('ready_bags');
     const sn = localStorage.getItem('ready_nextId');
-    if (si !== null) items = JSON.parse(si);
-    if (sb !== null) bags = JSON.parse(sb);
+    if (si !== null) {
+      items = JSON.parse(si);
+      const storedItemIds = new Set(items.map(i => i.id));
+      SEED_ITEMS.forEach(s => { if (!storedItemIds.has(s.id)) items.push(s); });
+    }
+    if (sb !== null) {
+      bags = JSON.parse(sb);
+      const storedBagIds = new Set(bags.map(b => b.id));
+      SEED_BAGS.forEach(s => { if (!storedBagIds.has(s.id)) bags.push(s); });
+    }
     if (sn !== null) nextId = parseInt(sn);
   } catch(e) {}
 }
@@ -1196,6 +1262,44 @@ function saveItem() {
   render();
 }
 
+function openBagDetail(bagId) {
+  const bag = bags.find(b => b.id === bagId);
+  if (!bag) return;
+  document.getElementById('bd-id').value = bagId;
+  document.getElementById('bd-title').textContent = bag.name;
+  document.getElementById('bd-name').value = bag.name;
+  document.getElementById('bd-liters').value = bag.liters || '';
+  document.getElementById('bd-liters-expanded').value = bag.litersExpanded || '';
+  document.getElementById('bd-scenario').value = bag.scenario || '';
+  document.getElementById('bd-dims').value = bag.dims || '';
+  document.getElementById('bd-notes').value = bag.notes || '';
+  openModal('bag-detail-modal');
+}
+
+function saveBagDetail() {
+  const id = parseInt(document.getElementById('bd-id').value);
+  const bag = bags.find(b => b.id === id);
+  if (!bag) return;
+  const name = document.getElementById('bd-name').value.trim();
+  if (!name) { alert('Bag name required.'); return; }
+  bag.name = name;
+  bag.liters = parseFloat(document.getElementById('bd-liters').value) || 0;
+  bag.litersExpanded = parseFloat(document.getElementById('bd-liters-expanded').value) || null;
+  bag.scenario = document.getElementById('bd-scenario').value || null;
+  bag.dims = document.getElementById('bd-dims').value.trim();
+  bag.notes = document.getElementById('bd-notes').value.trim();
+  closeModal('bag-detail-modal');
+  render();
+}
+
+function deleteBagFromDetail() {
+  const id = parseInt(document.getElementById('bd-id').value);
+  if (!confirm('Remove this bag?')) return;
+  bags = bags.filter(b => b.id !== id);
+  closeModal('bag-detail-modal');
+  render();
+}
+
 function toggleCheck(id) {
   const item = items.find(i => i.id === id);
   if (item) { item.checked = !item.checked; render(); }
@@ -1233,12 +1337,18 @@ function updateSidebarCounts() {
 function renderBagList() {
   const el = document.getElementById('bag-list');
   if (!bags.length) { el.innerHTML = ''; return; }
-  el.innerHTML = bags.map(b => `
-    <div style="display:flex;align-items:center;padding:8px 20px;gap:8px">
-      <span style="flex:1;font-size:12px;color:var(--text)">${b.name}</span>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">${b.liters}${b.litersExpanded ? '–' + b.litersExpanded : ''}L</span>
-    </div>
-  `).join('');
+  el.innerHTML = bags.map(b => {
+    const scenarioLabel = b.scenario ? (SCENARIO_ICONS[b.scenario] + ' ' + SCENARIO_LABELS[b.scenario]) : '— unassigned';
+    return `
+      <button class="bag-btn" onclick="openBagDetail(${b.id})" style="flex-direction:column;align-items:flex-start;padding:10px 20px;gap:2px">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <span style="font-size:12px;font-weight:500;color:var(--text)">${b.name}</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">${b.liters}${b.litersExpanded ? '–' + b.litersExpanded : ''}L</span>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted)">${scenarioLabel}</div>
+      </button>
+    `;
+  }).join('');
 }
 
 function getFilteredItems() {
