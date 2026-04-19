@@ -1345,7 +1345,10 @@ function updateSidebarCounts() {
 function renderBagList() {
   const el = document.getElementById('bag-list');
   if (!bags.length) { el.innerHTML = ''; return; }
-  el.innerHTML = bags.map(b => {
+  const byVolumeDesc = (a, b) => (b.liters || 0) - (a.liters || 0);
+  const assigned   = bags.filter(b => b.scenario).sort(byVolumeDesc);
+  const unassigned = bags.filter(b => !b.scenario).sort(byVolumeDesc);
+  el.innerHTML = [...assigned, ...unassigned].map(b => {
     const scenarioLabel = b.scenario ? (SCENARIO_ICONS[b.scenario] + ' ' + SCENARIO_LABELS[b.scenario]) : '— unassigned';
     return `
       <button class="bag-btn" onclick="openBagDetail(${b.id})" style="flex-direction:column;align-items:flex-start;padding:10px 20px;gap:2px">
